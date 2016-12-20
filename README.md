@@ -1,2 +1,2 @@
 # libmcts
-moluo
+Monte Carlo Tree Search for Go, implemented by WenhaoQu.

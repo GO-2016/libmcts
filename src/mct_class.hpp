@@ -33,26 +33,27 @@ namespace mct{
 
             void clear(){
                 root->clear();
+                root_state.clear();
             }
             void run(nodeType* rt);
             void single_thread(nodeType* v,int time_limit);
 			actionType MCTSearch(int time_limit);
 			nodeType * TreePolicy(nodeType * v);
-			nodeType * Expend(nodeType * v);
+			nodeType * Expend(nodeType * v,stateType st);
 			nodeType * BestChild(nodeType * v,double c);
 			rewardType DefaultPolicy(stateType s,Player p);
-			void BackUp(nodeType * v, rewardType r);
+			void BackUp(nodeType * v, rewardType &r);
 
-            nodeType * getRoot(){
+            inline nodeType * getRoot(){
                 return root;
             }
 
 
-            int N(nodeType* v){
+            inline int N(nodeType* v){
                 return v->getNumber();
             }
 
-            double Q(nodeType* v){
+            inline double Q(nodeType* v){
                 //int mid = v->getQuality();
                 return (double)v->getQuality()/4096;
             }
@@ -88,7 +89,7 @@ namespace mct{
                 return res;
             }
 
-            Action<W,H> A(nodeType* v){
+            inline Action<W,H> A(nodeType* v){
                 return v->getAction();
             }
 	};
@@ -159,21 +160,22 @@ namespace mct{
 		nodeType * n=v;
        // std::chrono::nanoseconds interval(10);
         double cp = 0.707;
-        //assert(n!=NULL);
+        stateType level_state(root_state);
 		while(!n->isTerminal()){
             if(!n->isFullExpended()){
                 //std::lock_guard<std::mutex> lk(n->mtx);
                 unique_writeguard<WfirstRWLock> lk(n->mtx);
                 if (!n->isFullExpended()){
                     //std::cout << std::hex << std::this_thread::get_id() << "::double check success\t" << (n==root) << std::endl;
-                    n = Expend(n);
-                    return n;
+                    return Expend(n,level_state);
+                    //return n;
                 }else {
                     //std::cout << std::hex << std::this_thread::get_id() << "::double check failed" << std::endl;
                 }
             }else{
                 unique_readguard<WfirstRWLock> lk(n->mtx);
                 n = BestChild(n,cp);
+                level_state.doAction(n->getAction());
             }
 		}
         //std::cout << "terminal" << std::endl;
@@ -181,7 +183,7 @@ namespace mct{
 	}
 
 	template<std::size_t W,std::size_t H>
-	node<W,H>* MCT<W,H>::Expend(nodeType * v){
+	node<W,H>* MCT<W,H>::Expend(nodeType * v,stateType st){
         //auto start = std::chrono::steady_clock::now();
         //std::chrono::nanoseconds interval(10);
         //std::cout << std::hex << std::this_thread::get_id() << "::expend" << std::dec << v->child.size() << '|' << v->getMaxChild() <<std::endl;
@@ -190,7 +192,7 @@ namespace mct{
         //auto get_act = std::chrono::steady_clock::now();
         //std::cout << std::hex << std::this_thread::get_id()<< "::get action" << std::endl;
         //v->mtx.unlock();
-		stateType st = S(v,new_a);
+		st.doAction(new_a);
         //auto find_st = std::chrono::steady_clock::now();
         //std::cout << std::hex << std::this_thread::get_id()<< "::get new state" << std::endl;
 		//
@@ -253,14 +255,13 @@ namespace mct{
 	template<std::size_t W,std::size_t H>
 	Reward<W,H> MCT<W,H>::DefaultPolicy(stateType s, Player p){
         std::vector<pointType> act_list;
-        stateType test_s = s;
-        test_s.fastRollOut(p);
-        return test_s.getReward();
+        s.fastRollOut(p);
+        return s.getReward();
         //return rewardType(0.5);
 	}
 
 	template<std::size_t W,std::size_t H>
-	void MCT<W,H>::BackUp(nodeType * v, rewardType r){
+	void MCT<W,H>::BackUp(nodeType * v, rewardType &r){
 		nodeType * p = v;
 		while(p != NULL){
 			p->increaseNumber();

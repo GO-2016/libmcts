@@ -4,6 +4,9 @@ project(libmcts)
 #option(libgoboard_build_tests "Build libgoboard's own tests" OFF)
 
 set(CMAKE_CXX_STANDARD 11)
+#SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -pg")
+#SET(LINK_FLAGS "-pg")
+#CC=g++ -g -pg
 ##################################
 # pthread
 ##################################

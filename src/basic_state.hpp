@@ -47,7 +47,7 @@ namespace mct{
             clear();
         }
 
-        bool isTerminal(){
+        inline bool isTerminal(){
             return is_terminal;
         }
 
@@ -59,11 +59,11 @@ namespace mct{
             return b;
         }
 
-        std::vector<pointType> getAllValidPosition(Player player){
+        inline std::vector<pointType> getAllValidPosition(Player player){
             return b.getAllGoodPosition(player);
         }
 
-        void doAction(actionType a){
+        inline void doAction(actionType a){
             b.place(a.point,a.player);
             is_terminal = (b.getAllGoodPosition(Player::B).size()==0 || b.getAllGoodPosition(Player::W).size()==0);
         }
@@ -78,7 +78,7 @@ namespace mct{
             std::vector<pointType> act_list = b.getAllGoodPosition(player);
             std::vector<pointType> op_act_list = b.getAllGoodPosition(opplayer);
             while(act_list.size()>0 && op_act_list.size()>0) {
-                if (cnt++ == 10) {
+                if (cnt++ == 5){
                     act_list = b.getAllGoodPosition(player);
                     op_act_list = b.getAllGoodPosition(opplayer);
                     cnt = 0;
@@ -126,8 +126,8 @@ namespace mct{
         rewardType getReward(){
             int Wnum=0;
             int Bnum=0;
-            for(int j=H-1;j>=0;j--) for(int i=W-1;i>=0;i--){
-                    pointType p((char)i,(char)j);
+            for(std::size_t j=1;j<H;j++) for(std::size_t i=0;i<W;i++){
+                    pointType p(i,j);
                     if(b.getPointState(p) != board::PointState::NA) {
                         auto group = b.getPointGroup(p);
                         switch(group->getPlayer()){

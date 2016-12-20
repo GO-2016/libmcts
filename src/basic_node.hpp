@@ -106,38 +106,37 @@ namespace mct{
             //state.clear();
         }
 
-		int getNumber(){
+		inline int getNumber(){
 			return number;
 		}
 
-        void increaseNumber(){
+        inline void increaseNumber(){
             number++;
         }
 
-		int getQuality(){
+        inline int getQuality(){
 			return quality;
 		}
 
-        void increaseQuality(double q){
-            int res = (int)(q*4096);
+        inline void increaseQuality(double q){
             //std::cout << res << std::endl;
-            quality += res;
+            quality += (int)(q*4096);
         }
 
         /*stateType getState(){
             return state;
         }*/
 
-        actionType getAction(){
+        inline actionType getAction(){
             return act;
         }
 
-        bool isFullExpended(){
+        inline bool isFullExpended(){
             //std::lock_guard<std::mutex> lk(judge_mtx);
             return full_expended;
         }
 
-        bool isFullChild(){
+        inline bool isFullChild(){
 
             return (child.size()==max_child_number);
         }
@@ -156,11 +155,11 @@ namespace mct{
 
 
 
-        bool isTerminal(){
+        inline bool isTerminal(){
             return is_terminal;
         }
 
-        node* getParent(){
+        inline node* getParent(){
             return parent;
         }
 
@@ -172,15 +171,15 @@ namespace mct{
             }
         }
 
-        board::Player getCurrentPlayer(){
+        inline board::Player getCurrentPlayer(){
             return player;
         }
 
-        board::Player getNextPlayer(){
+        inline board::Player getNextPlayer(){
             return getOpponentPlayer(player);
         }
 
-        int getMaxChild(){
+        inline int getMaxChild(){
             return max_child_number;
         }
 	};

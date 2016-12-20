@@ -1,3 +1,6 @@
 [submodule "vendor/libgoboard"]
 	path = vendor/libgoboard
 	url = https://github.com/sjtu-ai-go/libgoboard.git
+[submodule "vendor/vendor/libgoboard"]
+	path = vendor/vendor/libgoboard
+	url = https://github.com/GO-2016/libgoboard.git

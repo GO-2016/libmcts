@@ -70,12 +70,12 @@ int main(){
     */
 
     board::Player p = board::Player::W;
-    board::Board<5,5> test_board;
-    board::Board<3,3> small_board;
-    board::Board<9,9> nine_board;
+    //board::Board<5,5> test_board;
+    //board::Board<3,3> small_board;
+    //board::Board<9,9> nine_board;
     board::Board<19,19> norm_board;
     //mct::node<3,3> test_node(test_board,p);
-
+/*
     test_board.place(board::GridPoint<5,5>(0,0),board::Player::W);
     test_board.place(board::GridPoint<5,5>(0,1),board::Player::W);
     test_board.place(board::GridPoint<5,5>(0,2),board::Player::W);
@@ -101,7 +101,7 @@ int main(){
     test_board.place(board::GridPoint<5,5>(4,3),board::Player::B);
     test_board.place(board::GridPoint<5,5>(4,4),board::Player::B);
     std::cout << test_board << std::endl;
-
+*/
     //test_board.clear();
     mct::MCT<19,19> tree(norm_board,p,8);
     //mct::node<3,3>* tmp = tree.getRoot();

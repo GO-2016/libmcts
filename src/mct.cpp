@@ -108,6 +108,7 @@ int main(){
     //std::cout << tmp->getMaxChild() << std::endl;
     //while(i++<10000) tmp = tree.TreePolicy(tmp);
     mct::Action<19,19> a = tree.MCTSearch(3);
+    tree.clear();
 
     return 0;
 }

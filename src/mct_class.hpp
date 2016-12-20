@@ -164,16 +164,22 @@ namespace mct{
 		while(!n->isTerminal()){
             if(!n->isFullExpended()){
                 //std::lock_guard<std::mutex> lk(n->mtx);
-                unique_writeguard<WfirstRWLock> lk(n->mtx);
+                n->action_mtx.lock_write();
                 if (!n->isFullExpended()){
                     //std::cout << std::hex << std::this_thread::get_id() << "::double check success\t" << (n==root) << std::endl;
-                    return Expend(n,level_state);
+                    actionType new_a = n->getOneUntriedAction();
+                    n->action_mtx.release_write();
+                    level_state.doAction(new_a);
+                    nodeType * res = new nodeType(level_state,n->getNextPlayer(),n,new_a,level_state.isTerminal());
+                    v->addChild(res);
+                    return res;
+                    //return Expend(n,level_state);
                     //return n;
                 }else {
                     //std::cout << std::hex << std::this_thread::get_id() << "::double check failed" << std::endl;
                 }
             }else{
-                unique_readguard<WfirstRWLock> lk(n->mtx);
+                unique_readguard<WfirstRWLock> lk(n->child_mtx);
                 n = BestChild(n,cp);
                 level_state.doAction(n->getAction());
             }

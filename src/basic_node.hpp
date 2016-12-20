@@ -44,7 +44,8 @@ namespace mct{
 
 	public:
         //std::mutex mtx;
-        WfirstRWLock mtx;
+        WfirstRWLock action_mtx;
+        WfirstRWLock child_mtx;
         using nodeType = node<W,H>;
         using stateType = State<W,H>;
         using boardType = board::Board<W,H>;
@@ -132,7 +133,7 @@ namespace mct{
         }
 
         inline bool isFullExpended(){
-            //std::lock_guard<std::mutex> lk(judge_mtx);
+            unique_readguard<WfirstRWLock> lk(child_mtx);
             return full_expended;
         }
 
@@ -166,7 +167,7 @@ namespace mct{
         void addChild(nodeType* c){
             child.push_back(c);
             if(child.size()==max_child_number){
-                //std::lock_guard<std::mutex> lk(judge_mtx);
+                unique_writeguard<WfirstRWLock> lk(child_mtx);;
                 full_expended=true;
             }
         }

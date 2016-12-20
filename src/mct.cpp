@@ -103,7 +103,7 @@ int main(){
     std::cout << test_board << std::endl;
 */
     //test_board.clear();
-    mct::MCT<19,19> tree(norm_board,p,8);
+    mct::MCT<19,19> tree(norm_board,p,6);
     //mct::node<3,3>* tmp = tree.getRoot();
     //std::cout << tmp->getMaxChild() << std::endl;
     //while(i++<10000) tmp = tree.TreePolicy(tmp);

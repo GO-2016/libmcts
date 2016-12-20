@@ -133,7 +133,7 @@ namespace mct{
         }
 
         inline bool isFullExpended(){
-            unique_readguard<WfirstRWLock> lk(child_mtx);
+            //unique_readguard<WfirstRWLock> lk(child_mtx);
             return full_expended;
         }
 

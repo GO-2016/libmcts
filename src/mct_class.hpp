@@ -163,15 +163,15 @@ namespace mct{
         stateType level_state(root_state);
 		while(!n->isTerminal()){
             if(!n->isFullExpended()){
-                //std::lock_guard<std::mutex> lk(n->mtx);
-                n->action_mtx.lock_write();
+                unique_writeguard<WfirstRWLock> lk(n->action_mtx);
+                //n->action_mtx.lock_write();
                 if (!n->isFullExpended()){
                     //std::cout << std::hex << std::this_thread::get_id() << "::double check success\t" << (n==root) << std::endl;
                     actionType new_a = n->getOneUntriedAction();
-                    n->action_mtx.release_write();
+                    //n->action_mtx.release_write();
                     level_state.doAction(new_a);
                     nodeType * res = new nodeType(level_state,n->getNextPlayer(),n,new_a,level_state.isTerminal());
-                    v->addChild(res);
+                    n->addChild(res);
                     return res;
                     //return Expend(n,level_state);
                     //return n;
@@ -179,7 +179,7 @@ namespace mct{
                     //std::cout << std::hex << std::this_thread::get_id() << "::double check failed" << std::endl;
                 }
             }else{
-                unique_readguard<WfirstRWLock> lk(n->child_mtx);
+                unique_readguard<WfirstRWLock> lk(n->action_mtx);
                 n = BestChild(n,cp);
                 level_state.doAction(n->getAction());
             }
@@ -260,10 +260,10 @@ namespace mct{
 	//////////////////////////////////////////
 	template<std::size_t W,std::size_t H>
 	Reward<W,H> MCT<W,H>::DefaultPolicy(stateType s, Player p){
-        std::vector<pointType> act_list;
-        s.fastRollOut(p);
-        return s.getReward();
-        //return rewardType(0.5);
+        //std::vector<pointType> act_list;
+        //s.fastRollOut(p);
+        //return s.getReward();
+        return rewardType(0.5);
 	}
 
 	template<std::size_t W,std::size_t H>

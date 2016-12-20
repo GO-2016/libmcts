@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <mutex>
 #include <atomic>
+#include <random>
 #include "basic_action.hpp"
 #include "basic_state.hpp"
 #include "rwlock.h"

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(libmcts)
 
 #option(libgoboard_build_tests "Build libgoboard's own tests" OFF)
+option(libmcts_build_tests "Build libmcts' test" ON)
 
 set(CMAKE_CXX_STANDARD 11)
 #SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -pg")
@@ -16,8 +17,12 @@ find_package(Threads)
 ##################################
 # libgoboard
 ##################################
-add_subdirectory(vendor/libgoboard)
-include_directories(${libgoboard_INCLUDE_DIR})
+if (NOT TARGET goboard)
+    add_subdirectory(vendor/libgoboard)
+    set(libgoboard_SOURCE_DIR vendor/libgoboard)
+    set(libgoboard_LIBS goboard)
+    include_directories(${libgoboard_INCLUDE_DIR})
+endif ()
 #target_link_libraries(mcts goboard)
 
 
@@ -29,23 +34,26 @@ add_library(mcts STATIC src/mct.cpp)
 target_link_libraries(mcts goboard)
 set(libmcts_INCLUDE_DIR ${libmcts_SOURCE_DIR}/src ${libgoboard_INCLUDE_DIR} PARENT_SCOPE)
 
-add_executable(mct src/mct.cpp)
-target_link_libraries(mct mcts)
-target_link_libraries(mct ${CMAKE_THREAD_LIBS_INIT})
 #################################
 # tests
 ################################
-#if (libgoboard_build_tests)
+if (libmcts_build_tests)
 #    enable_testing()
-    ################################
-    # GTest
-    ################################
+#    ################################
+#    # GTest
+#    ################################
 #    ADD_SUBDIRECTORY (vendor/googletest/googletest)
 #    include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+#    ###############################
+#    # board-test
+#    ###############################
+#    add_executable(uct-test src/uct_test.cpp)
+#    target_link_libraries(uct-test uct gtest gtest_main)
+#    add_test(uct_test uct-test)
     ###############################
-    # board-test
+    # mct-test
     ###############################
-#    add_executable(board-test src/board_test.cpp)
-#    target_link_libraries(board-test goboard gtest gtest_main)
-#    add_test(board_test board-test)
-#endif()
+    add_executable(mct src/mct.cpp)
+    target_link_libraries(mct mcts)
+    target_link_libraries(mct ${CMAKE_THREAD_LIBS_INIT})
+endif()

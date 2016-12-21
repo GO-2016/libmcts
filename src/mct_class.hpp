@@ -260,10 +260,10 @@ namespace mct{
 	//////////////////////////////////////////
 	template<std::size_t W,std::size_t H>
 	Reward<W,H> MCT<W,H>::DefaultPolicy(stateType s, Player p){
-        //std::vector<pointType> act_list;
-        //s.fastRollOut(p);
-        //return s.getReward();
-        return rewardType(0.5);
+        std::vector<pointType> act_list;
+        s.fastRollOut(p);
+        return s.getReward();
+        //return rewardType(0.5);
 	}
 
 	template<std::size_t W,std::size_t H>

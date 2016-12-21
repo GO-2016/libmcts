@@ -77,11 +77,11 @@ namespace mct{
             Player opplayer = board::getOpponentPlayer(player);
             std::vector<pointType> act_list = b.getAllGoodPosition(player);
             std::vector<pointType> op_act_list = b.getAllGoodPosition(opplayer);
-            while(act_list.size()>0 && op_act_list.size()>0) {
-                if (cnt++ == 5){
+            while(act_list.size()>0 && op_act_list.size()>0 && cnt < 100) {
+                if (cnt++ % 5==0){
                     act_list = b.getAllGoodPosition(player);
                     op_act_list = b.getAllGoodPosition(opplayer);
-                    cnt = 0;
+                    //cnt = 0;
                 }
                 size = act_list.size();
                 op_size = op_act_list.size();
@@ -90,7 +90,7 @@ namespace mct{
                     p = act_list[index];
                     act_list.erase(act_list.begin() + index);
                     flag = true;
-                    while (b.getPointState(p) != board::PointState::NA) {
+                    while (b.getPosStatus(p,player) != board::Board<W,H>::PositionStatus::OK) {
                         if (act_list.size() == 0) {
                             flag = false;
                             break;
@@ -99,14 +99,15 @@ namespace mct{
                         p = act_list[index];
                         act_list.erase(act_list.begin() + index);
                     }
-                    if (flag) doAction(actionType(p, player));
+                    if (flag) b.place(p,player);
+                    else break;
                 }
                 if (op_size > 0) {
                     index = rand() % (op_size--);
                     p = op_act_list[index];
                     op_act_list.erase(op_act_list.begin() + index);
                     flag = true;
-                    while (b.getPointState(p) != board::PointState::NA) {
+                    while (b.getPosStatus(p,opplayer) != board::Board<W,H>::PositionStatus::OK) {
                         if (op_act_list.size() == 0) {
                             flag = false;
                             break;
@@ -115,7 +116,8 @@ namespace mct{
                         p = op_act_list[index];
                         op_act_list.erase(op_act_list.begin() + index);
                     }
-                    if (flag) doAction(actionType(p, opplayer));
+                    if (flag) b.place(p,opplayer);
+                    else break;
                 }
             }
             auto end = std::chrono::steady_clock::now();

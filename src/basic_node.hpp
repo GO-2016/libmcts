@@ -92,7 +92,7 @@ namespace mct{
         }
 
 		~node(){
-            std::cout << "clear" << std::endl;
+            //std::cout << "clear" << std::endl;
             clear();
 		}
 
@@ -102,6 +102,7 @@ namespace mct{
                 p = child.back();
                 child.pop_back();
                 p->clear();
+                delete p;
             }
             child.clear();
             valid_act.clear();

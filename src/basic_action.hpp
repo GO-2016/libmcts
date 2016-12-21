@@ -14,18 +14,25 @@ namespace mct{
         using pointType = board::GridPoint<W,H>;
         using Player = board::Player;
         pointType point;
+        bool pass;
         Player player;
         Action(pointType p, Player player1){
             point = p;
             player = player1;
+            pass = false;
         }
         Action(const Action<W,H> &other){
             point = other.point;
             player = other.player;
+            pass = other.pass;
         }
         Action(){
             point = pointType((char)0,(char)0);
             player = Player::W;
+            pass = false;
+        }
+        Action(bool b){
+            pass = b;
         }
 
         Action<W,H>& operator=(const Action<W,H> &other){

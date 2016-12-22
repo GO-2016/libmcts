@@ -56,7 +56,9 @@ namespace mct{
         std::vector<nodeType*> child;
         enum struct nodeStatus{
             BAD,    //never do this
-            NORMAL, //free
+            NORMAL, //normal place
+            CORNER, //place at corner
+            EDGE,   //place at edge
             PREFER  //prefer to do this
         };
         nodeStatus status;
@@ -131,6 +133,23 @@ namespace mct{
 
         inline void increaseQuality(double q){
             //std::cout << res << std::endl;
+            switch(status){
+                case nodeStatus::BAD:
+                    q *= 0.5;
+                    break;
+                case nodeStatus::NORMAL:
+                    q *= 0.8;
+                    break;
+                case nodeStatus::EDGE:
+                    q *= 1.0;
+                    break;
+                case nodeStatus::CORNER:
+                    q *= 1.2;
+                    break;
+                case nodeStatus::PREFER:
+                    q *= 1.5;
+                    break;
+            }
             quality += (int)(q*4096);
         }
 

@@ -206,9 +206,32 @@ namespace mct{
 
     template<std::size_t W,std::size_t H>
     auto MCT<W,H>::judgePoint(stateType st, actionType a)->typename nodeType::nodeStatus{
-        auto group1 = st.getBoard().getPointGroup(a.point);
+        //close eye
+        if(st.getBoard().isEye(a.point,a.player)) return nodeType::nodeStatus::BAD;
+
+        size_t x = a.point.x;
+        size_t y = a.point.y;
         st.doAction(a);
-        auto group2 = st.getBoard().getPointGroup(a.point);
+        //make eye
+        if(x<W && st.getBoard().isEye(pointType(x+1,y),a.player)) return nodeType::nodeStatus::PREFER;
+        if(x>0 && st.getBoard().isEye(pointType(x-1,y),a.player)) return nodeType::nodeStatus::PREFER;
+        if(y<H && st.getBoard().isEye(pointType(x,y+1),a.player)) return nodeType::nodeStatus::PREFER;
+        if(y>0 && st.getBoard().isEye(pointType(x,y-1),a.player)) return nodeType::nodeStatus::PREFER;
+
+        size_t mW = W/2;
+        size_t mH = H/2;
+        size_t cW = W/4;
+        size_t cH = H/4;
+        size_t d;
+        if(W == 19) d = 2;
+        else if(W == 9) d = 1;
+        else d = 0;
+        //corner or edge
+        if((x >= cW-d && x <= cW+d) || (x >= mW+cW+1-d && x <= mW+cW+1+d)){
+            if((y >= cH-d && y <= cH+d) || (y >= mH+cH+1-d && y <= mH+cH+1+d)) return nodeType::nodeStatus::CORNER;
+            else if(y > cH+d && y < mH+cH+1-d) return nodeType::nodeStatus::EDGE;
+        }else if(x > cW+d && x < mW+cW+1-d) if((y >= cH-d && y <= cH+d) || (y >= mH+cH+1-d && y <= mH+cH+1+d)) return nodeType::nodeStatus::EDGE;
+
         return nodeType::nodeStatus::NORMAL;
     }
 

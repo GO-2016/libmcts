@@ -249,7 +249,7 @@ namespace mct{
             //std::cout << log(N(v)) << std::endl;
 			mid = Q(p)/N(p)+c*sqrt(2*log(N(v))/N(p));
             //std::cout << std::hex << std::this_thread::get_id() << std::dec << mid << std::endl;
-			if(mid > biggest && p->status != nodeType::nodeStatus::BAD){
+			if(mid > biggest){
 				biggest = mid;
 				res = p;
                 //std::cout << (int)res->getAction().point.x << ' ' << (int)res->getAction().point.y << std::endl;
@@ -257,11 +257,12 @@ namespace mct{
 		}
         if(res == NULL){
             std::mt19937 gen { std::random_device()() };
+            int cnt = 0;
             do{
                 std::uniform_int_distribution<> rd(0, v->child.size() - 1);
                 int index = rd(gen);
                 res = v->child[index];
-            }while(res->status == nodeType::nodeStatus::BAD);
+            }while(res->status == nodeType::nodeStatus::BAD && cnt++ < 5);
         }
         //std::cout << std::hex << std::this_thread::get_id()<< "::found child  " << res->isTerminal()<< std::endl;
         if(c == 0){

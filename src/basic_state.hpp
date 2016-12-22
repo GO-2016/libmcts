@@ -142,10 +142,10 @@ namespace mct{
                         }
                     }
                 }
-            double winnum = abs(Bnum-Wnum-6.5);
-            double score = log(winnum>3?winnum:3);
-            if(Wnum>Bnum) return rewardType(score,Player::W);
-            else return rewardType(score,Player::B);
+            double winnum = Bnum-Wnum-6.5;
+            double score = log(abs(winnum)>3?abs(winnum):3);
+            if(winnum > 0) return rewardType(score,Player::B);
+            else return rewardType(score,Player::W);
         }
 
         State<H,W>& operator=(const State<H,W> &other){

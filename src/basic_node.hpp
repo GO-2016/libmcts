@@ -43,6 +43,7 @@ namespace mct{
         std::vector<pointType> valid_act;
         std::mt19937 gen { std::random_device()() };
 
+
 	public:
         //std::mutex mtx;
         WfirstRWLock action_mtx;
@@ -53,6 +54,12 @@ namespace mct{
         using actionType = Action<W,H>;
         using Player = board::Player;
         std::vector<nodeType*> child;
+        enum struct nodeStatus{
+            BAD,    //never do this
+            NORMAL, //free
+            PREFER  //prefer to do this
+        };
+        nodeStatus status;
 
 		node(const board::Board<W,H> &b,Player p):number(0),quality(0){
 			parent = NULL;
@@ -68,7 +75,7 @@ namespace mct{
             full_expended = (valid_act.size()==0);
             is_terminal = (max_child_number==0);
 		}
-        node(stateType &s,Player p,nodeType* par,actionType action,bool t):number(0),quality(0){
+        node(stateType &s,Player p,nodeType* par,actionType action,bool t,nodeStatus st):number(0),quality(0){
             parent = par;
             //state = s;
             act = action;
@@ -77,6 +84,7 @@ namespace mct{
             max_child_number = valid_act.size();
             full_expended = (valid_act.size()==0);
             is_terminal = t || (max_child_number==0);
+            status = st;
         }
         node(const nodeType &other){
             number = other.number;
@@ -148,11 +156,8 @@ namespace mct{
             assert(!isFullExpended());
             std::uniform_int_distribution<> rd(0, valid_act.size() - 1);
             int index = rd(gen);
-            //std::cout << "size:" << valid_act.size() << "index:" << index << std::endl;
             pointType res = valid_act[index];
             valid_act.erase(valid_act.begin()+index);
-            //std::cout << "size:" << valid_act.size() << std::endl;
-            //full_expended = (valid_act.size()==0);
             return actionType(res,player);
         }
 

@@ -43,6 +43,7 @@ namespace mct{
 			nodeType * BestChild(nodeType * v,double c);
 			rewardType DefaultPolicy(stateType s,Player p);
 			void BackUp(nodeType * v, rewardType &r);
+            typename nodeType::nodeStatus judgePoint(stateType st, actionType a);
 
             inline nodeType * getRoot(){
                 return root;
@@ -170,8 +171,9 @@ namespace mct{
                     //std::cout << std::hex << std::this_thread::get_id() << "::double check success\t" << (n==root) << std::endl;
                     actionType new_a = n->getOneUntriedAction();
                     //n->action_mtx.release_write();
+                    auto status = judgePoint(level_state,new_a);
                     level_state.doAction(new_a);
-                    nodeType * res = new nodeType(level_state,n->getNextPlayer(),n,new_a,level_state.isTerminal());
+                    nodeType * res = new nodeType(level_state,n->getNextPlayer(),n,new_a,level_state.isTerminal(),status);
                     n->addChild(res);
                     return res;
                     //return Expend(n,level_state);
@@ -191,37 +193,24 @@ namespace mct{
 
 	template<std::size_t W,std::size_t H>
 	node<W,H>* MCT<W,H>::Expend(nodeType * v,stateType st){
-        //auto start = std::chrono::steady_clock::now();
-        //std::chrono::nanoseconds interval(10);
-        //std::cout << std::hex << std::this_thread::get_id() << "::expend" << std::dec << v->child.size() << '|' << v->getMaxChild() <<std::endl;
 
 		actionType new_a = v->getOneUntriedAction();
-        //auto get_act = std::chrono::steady_clock::now();
-        //std::cout << std::hex << std::this_thread::get_id()<< "::get action" << std::endl;
-        //v->mtx.unlock();
+        auto status = judgePoint(st,new_a);
 		st.doAction(new_a);
-        //auto find_st = std::chrono::steady_clock::now();
-        //std::cout << std::hex << std::this_thread::get_id()<< "::get new state" << std::endl;
-		//
 
-		//if(st.isTerminal())std::cout << "find terminal state" << std::endl;
-		nodeType * res = new nodeType(st,v->getNextPlayer(),v,new_a,st.isTerminal());
-        //if(st.isTerminal())std::cout << "find terminal state" << std::endl;
-        //auto create_child = std::chrono::steady_clock::now();
-        //std::cout << std::hex << std::this_thread::get_id()<< "::get new node" << std::endl;
-        //while(!v->child_mtx.try_lock()){}
+		nodeType * res = new nodeType(st,v->getNextPlayer(),v,new_a,st.isTerminal(),status);
         v->addChild(res);
-        //std::cout << std::hex << std::this_thread::get_id()<< ":;add child" << std::endl;
-        //v->child_mtx.unlock();
-        //v->mtx.unlock();
 
-        //auto add_child = std::chrono::steady_clock::now();
-        //std::cout << "get action time:" << std::chrono::duration_cast<std::chrono::milliseconds>(get_act - start).count() << "ms" << std::endl;
-        //std::cout << "get child state time:" << std::chrono::duration_cast<std::chrono::milliseconds>(find_st - get_act).count() << "ms" << std::endl;
-        //std::cout << "create child time:" << std::chrono::duration_cast<std::chrono::milliseconds>(create_child - find_st).count() << "ms" << std::endl;
-        //std::cout << "add child time:" << std::chrono::duration_cast<std::chrono::milliseconds>(add_child - create_child).count() << "ms" << std::endl;
 		return res;
 	}
+
+    template<std::size_t W,std::size_t H>
+    auto MCT<W,H>::judgePoint(stateType st, actionType a)->typename nodeType::nodeStatus{
+        auto group1 = st.getBoard().getPointGroup(a.point);
+        st.doAction(a);
+        auto group2 = st.getBoard().getPointGroup(a.point);
+        return nodeType::nodeStatus::NORMAL;
+    }
 
 	template<std::size_t W,std::size_t H>
 	node<W,H>* MCT<W,H>::BestChild(nodeType * v,double c){
@@ -237,7 +226,7 @@ namespace mct{
             //std::cout << log(N(v)) << std::endl;
 			mid = Q(p)/N(p)+c*sqrt(2*log(N(v))/N(p));
             //std::cout << std::hex << std::this_thread::get_id() << std::dec << mid << std::endl;
-			if(mid > biggest){
+			if(mid > biggest && p->status != nodeType::nodeStatus::BAD){
 				biggest = mid;
 				res = p;
                 //std::cout << (int)res->getAction().point.x << ' ' << (int)res->getAction().point.y << std::endl;
@@ -245,9 +234,11 @@ namespace mct{
 		}
         if(res == NULL){
             std::mt19937 gen { std::random_device()() };
-            std::uniform_int_distribution<> rd(0, v->child.size() - 1);
-            int index = rd(gen);
-            res = v->child[index];
+            do{
+                std::uniform_int_distribution<> rd(0, v->child.size() - 1);
+                int index = rd(gen);
+                res = v->child[index];
+            }while(res->status == nodeType::nodeStatus::BAD);
         }
         //std::cout << std::hex << std::this_thread::get_id()<< "::found child  " << res->isTerminal()<< std::endl;
         if(c == 0){

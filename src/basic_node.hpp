@@ -138,16 +138,16 @@ namespace mct{
                     q *= 0.5;
                     break;
                 case nodeStatus::NORMAL:
-                    q *= 0.8;
+                    q *= 0.95;
                     break;
                 case nodeStatus::EDGE:
                     q *= 1.0;
                     break;
                 case nodeStatus::CORNER:
-                    q *= 1.2;
+                    q *= 1.05;
                     break;
                 case nodeStatus::PREFER:
-                    q *= 1.5;
+                    q *= 1.2;
                     break;
             }
             quality += (int)(q*4096);

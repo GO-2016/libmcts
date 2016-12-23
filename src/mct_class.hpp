@@ -212,6 +212,9 @@ namespace mct{
         size_t x = a.point.x;
         size_t y = a.point.y;
         st.doAction(a);
+
+        if(st.getBoard().getPointGroup(a.point)->getLiberty()==1) return nodeType::nodeStatus::BAD;
+
         //make eye
         if(x<W && st.getBoard().isEye(pointType(x+1,y),a.player)) return nodeType::nodeStatus::PREFER;
         if(x>0 && st.getBoard().isEye(pointType(x-1,y),a.player)) return nodeType::nodeStatus::PREFER;

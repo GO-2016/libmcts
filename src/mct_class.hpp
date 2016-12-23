@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <thread>
 #include <chrono>
-
+//#include<Python.h>
 namespace mct{
 	template<std::size_t W,std::size_t H>
 	class MCT{
@@ -156,11 +156,12 @@ namespace mct{
         std::cout << (int)v->getAction().point.x << ' ' << (int)v->getAction().point.y << std::endl;
 		return v->getAction();
 	}
-
+	
 	template<std::size_t W,std::size_t H>
 	node<W,H>* MCT<W,H>::TreePolicy(nodeType * v){
 		nodeType * n=v;
        // std::chrono::nanoseconds interval(10);
+		//Py_Initialize();
         double cp = 0.707;
         stateType level_state(root_state);
 		while(!n->isTerminal()){
@@ -188,9 +189,23 @@ namespace mct{
             }
 		}
         //std::cout << "terminal" << std::endl;
+		//Py_Finalize();
 		return n;
 	}
-
+	
+	//template<std::size_t W,std::size_t H>
+	//node<W,H>* MCT<W,H>::From_Python_network(nodeType * v){
+		//nodeType * n=v;
+       // std::chrono::nanoseconds interval(10);
+        	//PyObject *pModule,*pFunc;
+    		//PyObject *pArgs, *pValue;
+		//pModule = PyImport_Import(PyString_FromString("python_library_name"));
+		//pFunc = PyObject_GetAttrString(pModule, "python_function_name");
+		//pArgs=(change n into data stucture fit for python)
+		//pValue = PyObject_CallObject(pFunc, pArgs);
+		//n=
+		//return n;
+	}
 	template<std::size_t W,std::size_t H>
 	node<W,H>* MCT<W,H>::Expend(nodeType * v,stateType st){
 
@@ -203,7 +218,7 @@ namespace mct{
 
 		return res;
 	}
-
+    
     template<std::size_t W,std::size_t H>
     auto MCT<W,H>::judgePoint(stateType st, actionType a)->typename nodeType::nodeStatus{
         //close eye

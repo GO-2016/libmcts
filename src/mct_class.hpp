@@ -151,6 +151,7 @@ namespace mct{
             if(iter->joinable()) iter->join();
         }
         std::cout << "search finished, total number:" << N(root) << std::endl;
+        if(root->child.size()==0) return actionType(true);
         nodeType * v = BestChild(root,0);
         std::cout << "finished" << std::endl;
         std::cout << (int)v->getAction().point.x << ' ' << (int)v->getAction().point.y << std::endl;
@@ -240,7 +241,6 @@ namespace mct{
 
 	template<std::size_t W,std::size_t H>
 	node<W,H>* MCT<W,H>::BestChild(nodeType * v,double c){
-        //std::cout << std::hex << std::this_thread::get_id()<< "::get child  " << v->child.size() << std::endl;
 		nodeType * res = NULL,*p = NULL;
 		double biggest = -2e5;
 		double mid;

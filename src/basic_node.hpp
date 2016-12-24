@@ -135,7 +135,7 @@ namespace mct{
             //std::cout << res << std::endl;
             switch(status){
                 case nodeStatus::BAD:
-                    q *= 0.5;
+                    q *= 0.8;
                     break;
                 case nodeStatus::NORMAL:
                     q *= 0.95;

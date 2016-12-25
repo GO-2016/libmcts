@@ -1,0 +1,61 @@
+python function:
+def great_function(a):
+    return a + 1
+In file named great_module.py.
+Packing in C++ language:
+#include <Python.h> 
+
+int great_function_from_python(int a) { 
+  int res; PyObject *pModule,*pFunc; 
+  PyObject *pArgs, *pValue; 
+  
+  /* import */ 
+  pModule = PyImport_Import(PyString_FromString("great_module")); 
+  
+  /* great_module.great_function */ 
+  pFunc = PyObject_GetAttrString(pModule, "great_function"); /* build args */ 
+
+  pArgs = PyTuple_New(1); 
+  PyTuple_SetItem(pArgs,0, PyInt_FromLong(a)); /* call */ 
+
+  pValue = PyObject_CallObject(pFunc, pArgs); 
+
+  res = PyInt_AsLong(pValue); 
+  return res;
+ }
+ 
+ Main function in C++ program:
+ int main(int argc, char *argv[]) {
+    Py_Initialize();
+    printf("%d",great_function_from_python(2));
+    Py_Finalize();
+}
+
+Set environment variable before compliation.
+Linux
+bash:
+export PYTHONPATH=.:$PYTHONPATH
+csh:
+setenv PYTHONPATH .:$PYTHONPATH
+compliation:
+gcc filename.cpp -o filename -I/usr/include/python2.7/ -lpython2.7
+
+c++ send tuples as parameter to python function,here is the transform from tuple to (2,19,19) numpy array we want
+
+import numpy as np
+def numpy_create(a,b):
+	#input tuple
+	#if tuple is already 19*19 use folowing sentence to merge them
+	c=np.array(a)
+	d=np.array(b)
+	e=np.array([c,d])
+	print e
+	print e.shape
+	#if tuple is 1*361
+	#then using following sentence
+	#c=np.array(a)
+	#d=np.array(b)
+	#c=np.reshape(c,(-1,19))
+	#d=np.reshape(d,(-1,19))
+	#e=np.array([c,d])
+	return e

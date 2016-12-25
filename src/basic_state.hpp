@@ -152,7 +152,7 @@ namespace mct{
                     }
                 }
             double winnum = Bnum-Wnum-6.5;
-            double score = log(abs(winnum)) + sigmoid(abs(winnum));
+            double score = log(abs(winnum)+1) + sigmoid(abs(winnum));
 
             if(winnum > 0) return rewardType(score,Player::B);
             else return rewardType(score,Player::W);

@@ -41,6 +41,10 @@ namespace mct{
             return *this;
         };
 
+        Action<W,H> changePlayer(){
+            return Action<W,H>(point,board::getOpponentPlayer(player));
+        }
+
 	};
 }
 

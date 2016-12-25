@@ -119,7 +119,7 @@ namespace mct{
     void MCT<W,H>::single_thread(nodeType * v, int time_limit){
         int check_time = 5;
         auto start = std::chrono::steady_clock::now();
-        std::chrono::milliseconds limit(1000*(time_limit-1));
+        std::chrono::milliseconds limit(1000*time_limit-100);
         int cnt = 0,check = 0;
         //double timedif;
         std::cout << "begin tid:" << std::this_thread::get_id() << std::endl;
@@ -212,8 +212,10 @@ namespace mct{
 
         size_t x = a.point.x;
         size_t y = a.point.y;
-        st.doAction(a);
+        stateType stt(st);
+        Player opplayer = board::getOpponentPlayer(a.player);
 
+        st.doAction(a);
         if(st.getBoard().getPointGroup(a.point)->getLiberty()==1) return nodeType::nodeStatus::BAD;
 
         //make eye
@@ -221,6 +223,12 @@ namespace mct{
         if(x>0 && st.getBoard().isEye(pointType(x-1,y),a.player)) return nodeType::nodeStatus::PREFER;
         if(y<H && st.getBoard().isEye(pointType(x,y+1),a.player)) return nodeType::nodeStatus::PREFER;
         if(y>0 && st.getBoard().isEye(pointType(x,y-1),a.player)) return nodeType::nodeStatus::PREFER;
+
+        stt.doAction(a.changePlayer());
+        if(x<W && stt.getBoard().isEye(pointType(x+1,y),opplayer)) return nodeType::nodeStatus::PREFER;
+        if(x>0 && stt.getBoard().isEye(pointType(x-1,y),opplayer)) return nodeType::nodeStatus::PREFER;
+        if(y<H && stt.getBoard().isEye(pointType(x,y+1),opplayer)) return nodeType::nodeStatus::PREFER;
+        if(y>0 && stt.getBoard().isEye(pointType(x,y-1),opplayer)) return nodeType::nodeStatus::PREFER;
 
         size_t mW = W/2;
         size_t mH = H/2;

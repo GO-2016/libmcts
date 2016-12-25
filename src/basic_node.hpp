@@ -135,19 +135,19 @@ namespace mct{
             //std::cout << res << std::endl;
             switch(status){
                 case nodeStatus::BAD:
-                    q *= 0.8;
+                    q *= 0.9;
                     break;
                 case nodeStatus::NORMAL:
-                    q *= 0.95;
+                    q *= 0.99;
                     break;
                 case nodeStatus::EDGE:
                     q *= 1.0;
                     break;
                 case nodeStatus::CORNER:
-                    q *= 1.05;
+                    q *= 1.01;
                     break;
                 case nodeStatus::PREFER:
-                    q *= 1.2;
+                    q *= 1.05;
                     break;
             }
             quality += (int)(q*4096);

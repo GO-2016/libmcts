@@ -86,7 +86,7 @@ int main(){
     board::Player p = board::Player::W;
     board::Board<19,19> norm_board;
     mct::MCT<19,19> tree(norm_board,p,8);
-    mct::Action<19,19> a = tree.MCTSearch(3);
+    mct::Action<19,19> a = tree.MCTSearch(2);
     tree.clear();
 
     return 0;

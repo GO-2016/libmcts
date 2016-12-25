@@ -29,6 +29,13 @@ namespace mct{
         using Player = board::Player;
         boardType b;
         bool is_terminal;
+
+        inline double sigmoid(double x)
+        {
+            double ans = 1 / (1+exp(-x));
+            return ans;
+        }
+
 	public:
         State(const State<W,H> &other){
             b = other.b;
@@ -125,6 +132,8 @@ namespace mct{
             //std::cout << "fast roll out cost time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms"<< std::endl;
         }
 
+
+
         rewardType getReward(){
             int Wnum=0;
             int Bnum=0;
@@ -143,7 +152,8 @@ namespace mct{
                     }
                 }
             double winnum = Bnum-Wnum-6.5;
-            double score = log(abs(winnum)>3?abs(winnum):3);
+            double score = log(abs(winnum)) + sigmoid(abs(winnum));
+
             if(winnum > 0) return rewardType(score,Player::B);
             else return rewardType(score,Player::W);
         }

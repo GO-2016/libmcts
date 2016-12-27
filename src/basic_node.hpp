@@ -209,6 +209,44 @@ namespace mct{
         inline int getMaxChild(){
             return max_child_number;
         }
+
+        RequestV1Service reqv1Service;
+        auto getCNNGoodPositions(board::Board<W, H> &b, board::Player player) ->
+        typename UCTTreeNodeBlock<W, H>::GoodPositionType
+        {
+            auto requestV1 = b.generateRequestV1(player);
+            auto resp = reqv1Service.sync_call(requestV1);
+            auto &possibility = *resp.mutable_possibility();
+            using PairT = std::pair<PointType, double>;
+            std::vector<PairT> vp;
+            vp.reserve(W * H);
+            for (std::size_t i=0; i<possibility.size(); ++i)
+                vp.emplace_back(PointType(i / H, i % H), possibility.data()[i]);
+            std::sort(vp.begin(), vp.end(), [](const PairT &a, const PairT &b) {
+                return a.second > b.second;
+            }); // vp: possibility large -> small
+
+            auto goodPosVec = b.getAllGoodPosition(player);
+            const double ACCUM_THRES = b.getStep() > 100 ? (b.getStep() > 200 ? 0.95 : 0.87): 0.8;
+            double accum = 0.0;
+            auto it = vp.begin();
+            int cnt = 0;
+            for (; it != vp.end() && (accum < ACCUM_THRES || cnt < 2); ++it)
+            {
+                if (std::find(goodPosVec.begin(), goodPosVec.end(), it->first) != goodPosVec.end()) {
+                    accum += it->second;
+                    ++cnt;
+                }
+            }
+            vp.erase(it, vp.end());
+
+            std::vector<PointType> ans; ans.reserve(W * H);
+            std::for_each(vp.rbegin(), vp.rend(), [&](const PairT &p) {
+                if (b.getPosStatus(p.first, player) == board::Board<W, H>::PositionStatus::OK)
+                    ans.push_back(p.first);
+            }); // ans: small to large
+            return ans;
+        }
 	};
 
 

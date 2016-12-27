@@ -30,7 +30,7 @@ endif ()
 # libmcts
 ##################################
 include_directories(src/)
-add_library(mcts STATIC src/mct.cpp)
+add_library(mcts STATIC src/mct.cpp src/cnn_v1.hpp)
 target_link_libraries(mcts goboard)
 set(libmcts_INCLUDE_DIR ${libmcts_SOURCE_DIR}/src ${libgoboard_INCLUDE_DIR} PARENT_SCOPE)
 

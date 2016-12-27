@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #include <thread>
 #include <chrono>
+#include "cnn_v1.hpp"
 
 namespace mct{
 	template<std::size_t W,std::size_t H>

@@ -14,6 +14,13 @@ set(CMAKE_CXX_STANDARD 11)
 find_package(Threads)
 
 
+################################
+# Find boost
+################################
+find_package(Boost 1.46 REQUIRED COMPONENTS system)
+include_directories(${Boost_INCLUDE_DIRS})
+
+
 ##################################
 # libgoboard
 ##################################
@@ -31,7 +38,7 @@ endif ()
 ##################################
 include_directories(src/)
 add_library(mcts STATIC src/mct.cpp src/cnn_v1.hpp)
-target_link_libraries(mcts goboard)
+target_link_libraries(mcts goboard ${Boost_SYSTEM_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 set(libmcts_INCLUDE_DIR ${libmcts_SOURCE_DIR}/src ${libgoboard_INCLUDE_DIR} PARENT_SCOPE)
 
 #################################

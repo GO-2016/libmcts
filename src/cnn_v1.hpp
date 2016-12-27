@@ -85,7 +85,7 @@ namespace mct
     class RequestV2Service: protected CNNServiceBase
     {
     public:
-        RequestV2Service(const std::string &addr, unsigned short port):
+        RequestV2Service(const std::string &addr="127.0.0.1", unsigned short port=7391):
                 CNNServiceBase(addr, port)
         {}
 

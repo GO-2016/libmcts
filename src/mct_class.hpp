@@ -24,6 +24,7 @@ namespace mct{
 			using Player = board::Player;
 			MCT(board::Board<W,H> &b, Player p,int thread = 4){
 				root =  new node<W,H>(b,p);
+                root->getCnn(b);
                 root_state = stateType(b);
                 thread_num = thread;
 			}
@@ -44,7 +45,7 @@ namespace mct{
 			nodeType * BestChild(nodeType * v,double c);
 			rewardType DefaultPolicy(stateType s,Player p);
 			void BackUp(nodeType * v, rewardType &r);
-            typename nodeType::nodeStatus judgePoint(stateType st, actionType a);
+            typename nodeType::nodeStatus judgePoint(board::Board<W,H> &b, actionType a);
 
             inline nodeType * getRoot(){
                 return root;
@@ -161,32 +162,34 @@ namespace mct{
 
 	template<std::size_t W,std::size_t H>
 	node<W,H>* MCT<W,H>::TreePolicy(nodeType * v){
-		nodeType * n=v;
+		nodeType * n=v,*tmp;
        // std::chrono::nanoseconds interval(10);
         double cp = 0.707;
         stateType level_state(root_state);
 		while(!n->isTerminal()){
+            if(!n->isGetCnn()){
+                unique_writeguard<WfirstRWLock> lk(n->action_mtx);
+                n->getCnn(level_state.getBoard());
+            }
             if(!n->isFullExpended()){
                 unique_writeguard<WfirstRWLock> lk(n->action_mtx);
                 //n->action_mtx.lock_write();
                 if (!n->isFullExpended()){
                     //std::cout << std::hex << std::this_thread::get_id() << "::double check success\t" << (n==root) << std::endl;
                     actionType new_a = n->getOneUntriedAction();
-                    //n->action_mtx.release_write();
-                    auto status = judgePoint(level_state,new_a);
+                    auto status = judgePoint(level_state.getBoard(),new_a);
                     level_state.doAction(new_a);
                     nodeType * res = new nodeType(level_state,n->getNextPlayer(),n,new_a,level_state.isTerminal(),status);
                     n->addChild(res);
                     return res;
                     //return Expend(n,level_state);
                     //return n;
-                }else {
-                    //std::cout << std::hex << std::this_thread::get_id() << "::double check failed" << std::endl;
                 }
             }else{
                 unique_readguard<WfirstRWLock> lk(n->action_mtx);
-                n = BestChild(n,cp);
-                level_state.doAction(n->getAction());
+                tmp = BestChild(n,cp);
+                if(tmp != n) level_state.doAction(tmp->getAction());
+                n = tmp;
             }
 		}
         //std::cout << "terminal" << std::endl;
@@ -207,19 +210,20 @@ namespace mct{
 	}
 
     template<std::size_t W,std::size_t H>
-    auto MCT<W,H>::judgePoint(stateType st, actionType a)->typename nodeType::nodeStatus{
+    auto MCT<W,H>::judgePoint(board::Board<W,H> &b, actionType a)->typename nodeType::nodeStatus{
         //close eye
-        if(st.getBoard().isEye(a.point,a.player)) return nodeType::nodeStatus::BAD;
+        if(b.isEye(a.point,a.player)) return nodeType::nodeStatus::NEVER;
 
         size_t x = a.point.x;
         size_t y = a.point.y;
-        stateType stt(st);
         Player opplayer = board::getOpponentPlayer(a.player);
 
+        stateType st(b);
         st.doAction(a);
         if(st.getBoard().getPointGroup(a.point)->getLiberty()==1) return nodeType::nodeStatus::BAD;
 
         //make eye
+        /*
         if(x<W && st.getBoard().isEye(pointType(x+1,y),a.player)) return nodeType::nodeStatus::PREFER;
         if(x>0 && st.getBoard().isEye(pointType(x-1,y),a.player)) return nodeType::nodeStatus::PREFER;
         if(y<H && st.getBoard().isEye(pointType(x,y+1),a.player)) return nodeType::nodeStatus::PREFER;
@@ -230,26 +234,36 @@ namespace mct{
         if(x>0 && stt.getBoard().isEye(pointType(x-1,y),opplayer)) return nodeType::nodeStatus::PREFER;
         if(y<H && stt.getBoard().isEye(pointType(x,y+1),opplayer)) return nodeType::nodeStatus::PREFER;
         if(y>0 && stt.getBoard().isEye(pointType(x,y-1),opplayer)) return nodeType::nodeStatus::PREFER;
+        */
 
-        size_t mW = W/2;
-        size_t mH = H/2;
-        size_t cW = W/4;
-        size_t cH = H/4;
-        size_t d;
-        if(W == 19) d = 2;
-        else if(W == 9) d = 1;
-        else d = 0;
-        //corner or edge
-        if((x >= cW-d && x <= cW+d) || (x >= mW+cW+1-d && x <= mW+cW+1+d)){
-            if((y >= cH-d && y <= cH+d) || (y >= mH+cH+1-d && y <= mH+cH+1+d)) return nodeType::nodeStatus::CORNER;
-            else if(y > cH+d && y < mH+cH+1-d) return nodeType::nodeStatus::EDGE;
-        }else if(x > cW+d && x < mW+cW+1-d) if((y >= cH-d && y <= cH+d) || (y >= mH+cH+1-d && y <= mH+cH+1+d)) return nodeType::nodeStatus::EDGE;
+        if(b.getStep()<80) {
+            size_t mW = W / 2;
+            size_t mH = H / 2;
+            size_t cW = W / 4;
+            size_t cH = H / 4;
+            size_t d;
+            if (W == 19) d = 2;
+            else if (W == 9) d = 1;
+            else d = 0;
+            //corner or edge
+            if ((x >= cW - d && x <= cW + d) || (x >= mW + cW + 1 - d && x <= mW + cW + 1 + d)) {
+                if ((y >= cH - d && y <= cH + d) || (y >= mH + cH + 1 - d && y <= mH + cH + 1 + d))
+                    return nodeType::nodeStatus::CORNER;
+                else if (y > cH + d && y < mH + cH + 1 - d) return nodeType::nodeStatus::EDGE;
+            } else if (x > cW + d && x < mW + cW + 1 - d)
+                if ((y >= cH - d && y <= cH + d) || (y >= mH + cH + 1 - d && y <= mH + cH + 1 + d))
+                    return nodeType::nodeStatus::EDGE;
+        }
 
         return nodeType::nodeStatus::NORMAL;
     }
 
 	template<std::size_t W,std::size_t H>
 	node<W,H>* MCT<W,H>::BestChild(nodeType * v,double c){
+        if(v->child.size()==0){
+            v->change_terminal();
+            return v;
+        }
 		nodeType * res = NULL,*p = NULL;
 		double biggest = -2e5;
 		double mid;
@@ -274,7 +288,7 @@ namespace mct{
                 std::uniform_int_distribution<> rd(0, v->child.size() - 1);
                 int index = rd(gen);
                 res = v->child[index];
-            }while(res->status == nodeType::nodeStatus::BAD && cnt++ < 5);
+            }while((res->status == nodeType::nodeStatus::BAD)&& cnt++ < 5);
         }
         //std::cout << std::hex << std::this_thread::get_id()<< "::found child  " << res->isTerminal()<< std::endl;
         if(c == 0){

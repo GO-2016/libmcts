@@ -46,7 +46,7 @@ namespace mct{
             is_terminal = (b.getAllGoodPosition(Player::B).size()==0 || b.getAllGoodPosition(Player::W).size()==0);
         }
         State(){
-            b = boardType();
+            //b = boardType();
             is_terminal = false;
         }
 
@@ -62,7 +62,7 @@ namespace mct{
             b.clear();
         }
 
-        boardType getBoard(){
+        boardType& getBoard(){
             return b;
         }
 
@@ -97,7 +97,7 @@ namespace mct{
                     p = act_list[index];
                     act_list.erase(act_list.begin() + index);
                     flag = true;
-                    while (b.getPosStatus(p,player) != board::Board<W,H>::PositionStatus::OK) {
+                    while (b.getPosStatus(p,player) != board::Board<W,H>::PositionStatus::OK || b.isEye(p,player)) {
                         if (act_list.size() == 0) {
                             flag = false;
                             break;
@@ -114,7 +114,7 @@ namespace mct{
                     p = op_act_list[index];
                     op_act_list.erase(op_act_list.begin() + index);
                     flag = true;
-                    while (b.getPosStatus(p,opplayer) != board::Board<W,H>::PositionStatus::OK) {
+                    while (b.getPosStatus(p,opplayer) != board::Board<W,H>::PositionStatus::OK || b.isEye(p,opplayer)) {
                         if (op_act_list.size() == 0) {
                             flag = false;
                             break;

@@ -13,7 +13,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace uct
+namespace mct
 {
     /*
     namespace detail
@@ -69,7 +69,7 @@ namespace uct
     class RequestV1Service: protected CNNServiceBase
     {
     public:
-        RequestV1Service(const std::string &addr, unsigned short port):
+        RequestV1Service(const std::string &addr="127.0.0.1", unsigned short port=7391):
                 CNNServiceBase(addr, port)
         {}
 

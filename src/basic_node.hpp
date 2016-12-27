@@ -9,6 +9,7 @@
 #include <random>
 #include "basic_action.hpp"
 #include "basic_state.hpp"
+#include "cnn_v1.hpp"
 #include "rwlock.h"
 /*
 a class of node, should include:
@@ -36,7 +37,7 @@ namespace mct{
 		//State<W,H> state;
 		Action<W,H> act;
 		bool full_expended;
-        //bool full_child;
+        bool get_cnn;
         bool is_terminal;
 		node<W,H>* parent;
         board::Player player;
@@ -55,7 +56,8 @@ namespace mct{
         using Player = board::Player;
         std::vector<nodeType*> child;
         enum struct nodeStatus{
-            BAD,    //never do this
+            BAD,
+            NEVER,    //never do this
             NORMAL, //normal place
             CORNER, //place at corner
             EDGE,   //place at edge
@@ -66,27 +68,29 @@ namespace mct{
 		node(const board::Board<W,H> &b,Player p):number(0),quality(0){
 			parent = NULL;
 			act = actionType();
-            stateType s(b);
+            //stateType s(b);
             player = p;
             //std::vector<pointType> mid = state.getAllValidPosition(p);
             //for(auto iter = mid.cbegin();iter != mid.cend();iter++) valid_act.push_back(*iter);
-            valid_act = s.getAllValidPosition(p);
-            max_child_number = valid_act.size();
-            s.clear();
+            //valid_act = getCNNGoodPositions(b,p);
+           // max_child_number = valid_act.size();
+            //s.clear();
             //std::cout << valid_act.size() << std::endl;
-            full_expended = (valid_act.size()==0);
-            is_terminal = (max_child_number==0);
+            //full_expended = (valid_act.size()==0);
+            //is_terminal = (max_child_number==0);
+            get_cnn = true;
 		}
         node(stateType &s,Player p,nodeType* par,actionType action,bool t,nodeStatus st):number(0),quality(0){
             parent = par;
             //state = s;
             act = action;
             player = p;
-            valid_act = s.getAllValidPosition(p);
-            max_child_number = valid_act.size();
-            full_expended = (valid_act.size()==0);
-            is_terminal = t || (max_child_number==0);
+            //valid_act = s.getAllValidPosition(p);
+            //max_child_number = valid_act.size();
+            full_expended = false;
+            is_terminal = t;
             status = st;
+            get_cnn = false;
         }
         node(const nodeType &other){
             number = other.number;
@@ -172,15 +176,24 @@ namespace mct{
         }
 
         actionType getOneUntriedAction(){
-            assert(!isFullExpended());
             std::uniform_int_distribution<> rd(0, valid_act.size() - 1);
             int index = rd(gen);
             pointType res = valid_act[index];
             valid_act.erase(valid_act.begin()+index);
             return actionType(res,player);
+
         }
 
+        bool isGetCnn(){
+            return get_cnn;
+        }
 
+        void getCnn(board::Board<W,H> &b){
+            valid_act = getCNNGoodPositions(b,player);
+            max_child_number = valid_act.size();
+            full_expended = (valid_act.size()==0);
+            is_terminal = is_terminal | (max_child_number==0);
+        }
 
         inline bool isTerminal(){
             return is_terminal;
@@ -191,11 +204,16 @@ namespace mct{
         }
 
         void addChild(nodeType* c){
-            child.push_back(c);
+            if(c->status == nodeStatus::NEVER) max_child_number--;
+            else child.push_back(c);
             if(child.size()==max_child_number){
                 unique_writeguard<WfirstRWLock> lk(child_mtx);;
                 full_expended=true;
             }
+        }
+
+        void change_terminal(){
+            is_terminal = true;
         }
 
         inline board::Player getCurrentPlayer(){
@@ -211,17 +229,15 @@ namespace mct{
         }
 
         RequestV1Service reqv1Service;
-        auto getCNNGoodPositions(board::Board<W, H> &b, board::Player player) ->
-        typename UCTTreeNodeBlock<W, H>::GoodPositionType
-        {
+        auto getCNNGoodPositions(board::Board<W, H> &b, Player player) -> std::vector<pointType> {
             auto requestV1 = b.generateRequestV1(player);
             auto resp = reqv1Service.sync_call(requestV1);
             auto &possibility = *resp.mutable_possibility();
-            using PairT = std::pair<PointType, double>;
+            using PairT = std::pair<pointType, double>;
             std::vector<PairT> vp;
             vp.reserve(W * H);
             for (std::size_t i=0; i<possibility.size(); ++i)
-                vp.emplace_back(PointType(i / H, i % H), possibility.data()[i]);
+                vp.emplace_back(pointType(i / H, i % H), possibility.data()[i]);
             std::sort(vp.begin(), vp.end(), [](const PairT &a, const PairT &b) {
                 return a.second > b.second;
             }); // vp: possibility large -> small
@@ -240,7 +256,7 @@ namespace mct{
             }
             vp.erase(it, vp.end());
 
-            std::vector<PointType> ans; ans.reserve(W * H);
+            std::vector<pointType> ans; ans.reserve(W * H);
             std::for_each(vp.rbegin(), vp.rend(), [&](const PairT &p) {
                 if (b.getPosStatus(p.first, player) == board::Board<W, H>::PositionStatus::OK)
                     ans.push_back(p.first);

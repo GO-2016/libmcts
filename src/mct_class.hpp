@@ -217,19 +217,8 @@ namespace mct{
         size_t x = a.point.x;
         size_t y = a.point.y;
         Player opplayer = board::getOpponentPlayer(a.player);
+        int step = b.getStep();
 
-        stateType st(b);
-        st.doAction(a);
-        if(st.getBoard().getPointGroup(a.point)->getLiberty()==1) return nodeType::nodeStatus::BAD;
-        if(st.getBoard().getPointGroup(a.point)->getLiberty()>10) return nodeType::nodeStatus::PREFER;
-
-        //make eye
-        if(b.getStep()>200) {
-            if (x < W && st.getBoard().isEye(pointType(x + 1, y), a.player)) return nodeType::nodeStatus::PREFER;
-            if (x > 0 && st.getBoard().isEye(pointType(x - 1, y), a.player)) return nodeType::nodeStatus::PREFER;
-            if (y < H && st.getBoard().isEye(pointType(x, y + 1), a.player)) return nodeType::nodeStatus::PREFER;
-            if (y > 0 && st.getBoard().isEye(pointType(x, y - 1), a.player)) return nodeType::nodeStatus::PREFER;
-        }
         /*
 
         stt.doAction(a.changePlayer());
@@ -238,25 +227,41 @@ namespace mct{
         if(y<H && stt.getBoard().isEye(pointType(x,y+1),opplayer)) return nodeType::nodeStatus::PREFER;
         if(y>0 && stt.getBoard().isEye(pointType(x,y-1),opplayer)) return nodeType::nodeStatus::PREFER;
         */
-
-        if(b.getStep()<100){
-            size_t mW = W / 2;
-            size_t mH = H / 2;
-            size_t cW = W / 4;
-            size_t cH = H / 4;
-            size_t d;
-            if (W == 19) d = 2;
-            else if (W == 9) d = 1;
-            else d = 0;
+        if(b.isSemiEye(a.point,opplayer)) return nodeType::nodeStatus::BAD;
+        size_t cW = 3;
+        size_t cH = 3;
+        size_t d;
+        d=1;
+        if(step < 30){
+            if ((x >= cW - d && x <= cW + d) || (x >= W - cW - 1 - d && x <= W - cW - 1 + d)) {
+                if ((y >= cH - d && y <= cH + d) || (y >= H - cH - 1 - d && y <= H - cH - 1 + d))
+                    return nodeType::nodeStatus::PREFER;
+            }
+        }else if(step < 150){
             //corner or edge
-            if ((x >= cW - d && x <= cW + d) || (x >= mW + cW + 1 - d && x <= mW + cW + 1 + d)) {
-                if ((y >= cH - d && y <= cH + d) || (y >= mH + cH + 1 - d && y <= mH + cH + 1 + d))
+            if ((x >= cW - d && x <= cW + d) || (x >= W - cW - 1 - d && x <= W - cW - 1 + d)) {
+                if ((y >= cH - d && y <= cH + d) || (y >= H - cH - 1 - d && y <= H - cH - 1 + d))
                     return nodeType::nodeStatus::CORNER;
-                else if (y > cH + d && y < mH + cH + 1 - d) return nodeType::nodeStatus::EDGE;
-            } else if (x > cW + d && x < mW + cW + 1 - d)
-                if ((y >= cH - d && y <= cH + d) || (y >= mH + cH + 1 - d && y <= mH + cH + 1 + d))
+                else if (y > cH + d && y < H - cH - 1 - d) return nodeType::nodeStatus::EDGE;
+            } else if (x > cW + d && x < W - cW - 1 - d)
+                if ((y >= cH - d && y <= cH + d) || (y >= H - cH - 1 - d && y <= H - cH - 1 + d))
                     return nodeType::nodeStatus::EDGE;
         }
+
+        stateType st(b);
+        st.doAction(a);
+        if(st.getBoard().getPointGroup(a.point)->getLiberty()==1) return nodeType::nodeStatus::BAD;
+
+        //make eye
+        if(step>200) {
+            if (x < W && st.getBoard().isTrueEye(pointType(x + 1, y), a.player)) return nodeType::nodeStatus::PREFER;
+            if (x > 0 && st.getBoard().isTrueEye(pointType(x - 1, y), a.player)) return nodeType::nodeStatus::PREFER;
+            if (y < H && st.getBoard().isTrueEye(pointType(x, y + 1), a.player)) return nodeType::nodeStatus::PREFER;
+            if (y > 0 && st.getBoard().isTrueEye(pointType(x, y - 1), a.player)) return nodeType::nodeStatus::PREFER;
+        }
+
+        if(step<300 && st.getBoard().getPointGroup(a.point)->getLiberty()>10) return nodeType::nodeStatus::BAD;
+
 
         return nodeType::nodeStatus::NORMAL;
     }

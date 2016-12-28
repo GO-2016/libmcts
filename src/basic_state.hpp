@@ -205,10 +205,10 @@ namespace mct{
                             auto group = b.getPointGroup(p);
                             switch (group->getPlayer()) {
                                 case Player::B:
-                                    Bnum += group->getLiberty();
+                                    Bnum += (group->getLiberty()>2);
                                     break;
                                 case Player::W:
-                                    Wnum += group->getLiberty();
+                                    Wnum += (group->getLiberty()>2);
                                     break;
                             }
                         }

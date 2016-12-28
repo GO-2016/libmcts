@@ -77,8 +77,8 @@ namespace mct{
             //s.clear();
             //std::cout << valid_act.size() << std::endl;
             //full_expended = (valid_act.size()==0);
-            //is_terminal = (max_child_number==0);
-            get_cnn = true;
+            is_terminal = false;
+            get_cnn = false;
 		}
         node(stateType &s,Player p,nodeType* par,actionType action,bool t,nodeStatus st):number(0),quality(0){
             parent = par;

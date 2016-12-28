@@ -282,7 +282,7 @@ namespace mct{
             double accum = 0.0;
             auto it = vp.begin();
             int cnt = 0;
-            for(;it!=vp.end() && (accum < ACC_THRES || cnt < 2) && it->second > AVG_ACC;++it){
+            for(;it!=vp.end() && (accum < ACC_THRES || cnt < 5) && it->second > AVG_ACC;++it){
                 if (std::find(goodPosVec.begin(), goodPosVec.end(), it->first) != goodPosVec.end()){
                     accum += it->second;
                     ++cnt;

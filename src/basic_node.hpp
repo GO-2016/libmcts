@@ -176,12 +176,9 @@ namespace mct{
         }
 
         actionType getOneUntriedAction(){
-            std::uniform_int_distribution<> rd(0, valid_act.size() - 1);
-            int index = rd(gen);
-            pointType res = valid_act[index];
-            valid_act.erase(valid_act.begin()+index);
+            pointType res = valid_act.back();
+            valid_act.pop_back();
             return actionType(res,player);
-
         }
 
         bool isGetCnn(){
@@ -227,7 +224,7 @@ namespace mct{
         inline int getMaxChild(){
             return max_child_number;
         }
-
+        /*
         RequestV1Service reqv1Service;
         auto getCNNGoodPositions(board::Board<W, H> &b, Player player) -> std::vector<pointType> {
             auto requestV1 = b.generateRequestV1(player);
@@ -258,13 +255,13 @@ namespace mct{
 
             std::vector<pointType> ans; ans.reserve(W * H);
             std::for_each(vp.rbegin(), vp.rend(), [&](const PairT &p) {
-                if (b.getPosStatus(p.first, player) == board::Board<W, H>::PositionStatus::OK)
+                if (b.getPosStatus(p.first, player) == board::Board<W, H>::PositionStatus::OK && std::find(goodPosVec.begin(), goodPosVec.end(), p.first) != goodPosVec.end())
                     ans.push_back(p.first);
             }); // ans: small to large
             return ans;
         }
+        */
 
-        /*
         RequestV2Service reqv2Service;
         auto getCNNGoodPositions(board::Board<W, H> &b, Player player) -> std::vector<pointType> {
             auto requestV2 = b.generateRequestV2(player);
@@ -273,20 +270,18 @@ namespace mct{
             using PairT = std::pair<pointType, double>;
             std::vector<PairT> vp;
             vp.reserve(W * H);
-            for (std::size_t i=0; i<possibility.size(); ++i)
-                vp.emplace_back(pointType(i / H, i % H), possibility.data()[i]);
+            for(std::size_t i=0;i<possibility.size();++i) vp.emplace_back(pointType(i/H, i%H), possibility.data()[i]);
             std::sort(vp.begin(), vp.end(), [](const PairT &a, const PairT &b) {
                 return a.second > b.second;
             }); // vp: possibility large -> small
 
             auto goodPosVec = b.getAllGoodPosition(player);
-            const double ACCUM_THRES = b.getStep() > 100 ? (b.getStep() > 200 ? 0.95 : 0.87): 0.8;
+            const double ACC_THRES = b.getStep() > 100 ? (b.getStep() > 200 ? 0.95 : 0.87): 0.8;
             double accum = 0.0;
             auto it = vp.begin();
             int cnt = 0;
-            for (; it != vp.end() && (accum < ACCUM_THRES || cnt < 2); ++it)
-            {
-                if (std::find(goodPosVec.begin(), goodPosVec.end(), it->first) != goodPosVec.end()) {
+            for(;it!=vp.end() && (accum < ACC_THRES || cnt < 2);++it){
+                if (std::find(goodPosVec.begin(), goodPosVec.end(), it->first) != goodPosVec.end()){
                     accum += it->second;
                     ++cnt;
                 }
@@ -294,12 +289,13 @@ namespace mct{
             vp.erase(it, vp.end());
 
             std::vector<pointType> ans; ans.reserve(W * H);
-            std::for_each(vp.rbegin(), vp.rend(), [&](const PairT &p) {
-                if (b.getPosStatus(p.first, player) == board::Board<W, H>::PositionStatus::OK)
+            std::for_each(vp.rbegin(), vp.rend(), [&](const PairT &p){
+                if (b.getPosStatus(p.first, player) == board::Board<W, H>::PositionStatus::OK &&
+                        std::find(goodPosVec.begin(), goodPosVec.end(), p.first) != goodPosVec.end())
                     ans.push_back(p.first);
             }); // ans: small to large
             return ans;
-        }*/
+        }
 	};
 
 

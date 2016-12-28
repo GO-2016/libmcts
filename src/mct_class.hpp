@@ -41,7 +41,7 @@ namespace mct{
             void single_thread(nodeType* v,int time_limit);
 			actionType MCTSearch(int time_limit);
 			nodeType * TreePolicy(nodeType * v);
-			nodeType * Expend(nodeType * v,stateType st);
+			//nodeType * Expend(nodeType * v,stateType st);
 			nodeType * BestChild(nodeType * v,double c);
 			rewardType DefaultPolicy(stateType s,Player p);
 			void BackUp(nodeType * v, rewardType &r);
@@ -119,12 +119,12 @@ namespace mct{
 
     template<std::size_t W,std::size_t H>
     void MCT<W,H>::single_thread(nodeType * v, int time_limit){
-        int check_time = 5;
+        int check_time = 2;
         auto start = std::chrono::steady_clock::now();
         std::chrono::milliseconds limit(1000*time_limit-100);
         int cnt = 0,check = 0;
         //double timedif;
-        std::cout << "begin tid:" << std::this_thread::get_id() << std::endl;
+        //std::cout << "begin tid:" << std::this_thread::get_id() << std::endl;
         while(1){
             check++;
             if(check%check_time == 0) {
@@ -136,7 +136,7 @@ namespace mct{
             run(v);
         }
         auto cur = std::chrono::steady_clock::now();
-        std::cout << "tid: " << std::this_thread::get_id() << " total_num: " << cnt << " time used: " << std::chrono::duration_cast<std::chrono::milliseconds>(cur - start).count() << std::endl;
+        //std::cout << "tid: " << std::this_thread::get_id() << " total_num: " << cnt << " time used: " << std::chrono::duration_cast<std::chrono::milliseconds>(cur - start).count() << std::endl;
     }
 
 
@@ -155,7 +155,7 @@ namespace mct{
         std::cout << "search finished, total number:" << N(root) << std::endl;
         if(root->child.size()==0) return actionType(true);
         nodeType * v = BestChild(root,0);
-        std::cout << "finished" << std::endl;
+        std::cout << "get move: ";
         std::cout << (int)v->getAction().point.x << ' ' << (int)v->getAction().point.y << std::endl;
 		return v->getAction();
 	}
@@ -195,7 +195,7 @@ namespace mct{
         //std::cout << "terminal" << std::endl;
 		return n;
 	}
-
+    /*
 	template<std::size_t W,std::size_t H>
 	node<W,H>* MCT<W,H>::Expend(nodeType * v,stateType st){
 
@@ -208,7 +208,7 @@ namespace mct{
 
 		return res;
 	}
-
+    */
     template<std::size_t W,std::size_t H>
     auto MCT<W,H>::judgePoint(board::Board<W,H> &b, actionType a)->typename nodeType::nodeStatus{
         //close eye
@@ -236,7 +236,7 @@ namespace mct{
         if(y>0 && stt.getBoard().isEye(pointType(x,y-1),opplayer)) return nodeType::nodeStatus::PREFER;
         */
 
-        if(b.getStep()<80) {
+        if(b.getStep()<80){
             size_t mW = W / 2;
             size_t mH = H / 2;
             size_t cW = W / 4;
@@ -302,7 +302,7 @@ namespace mct{
 	//////////////////////////////////////////
 	template<std::size_t W,std::size_t H>
 	Reward<W,H> MCT<W,H>::DefaultPolicy(stateType s, Player p){
-        std::vector<pointType> act_list;
+        //std::vector<pointType> act_list;
         s.fastRollOut(p);
         return s.getReward();
         //return rewardType(0.5);

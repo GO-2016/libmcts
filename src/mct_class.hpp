@@ -169,7 +169,7 @@ namespace mct{
 		while(!n->isTerminal()){
             if(!n->isGetCnn()){
                 unique_writeguard<WfirstRWLock> lk(n->action_mtx);
-                n->getCnn(level_state.getBoard());
+                if(!n->isGetCnn()) n->getCnn(level_state.getBoard());
             }
             if(!n->isFullExpended()){
                 unique_writeguard<WfirstRWLock> lk(n->action_mtx);

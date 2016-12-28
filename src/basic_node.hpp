@@ -278,10 +278,11 @@ namespace mct{
 
             auto goodPosVec = b.getAllGoodPosition(player);
             const double ACC_THRES = b.getStep() > 100 ? (b.getStep() > 200 ? 0.9 : 0.8): 0.7;
+            const double AVG_ACC = double(1)/361;
             double accum = 0.0;
             auto it = vp.begin();
             int cnt = 0;
-            for(;it!=vp.end() && (accum < ACC_THRES || cnt < 2);++it){
+            for(;it!=vp.end() && (accum < ACC_THRES || cnt < 2) && it->second > AVG_ACC;++it){
                 if (std::find(goodPosVec.begin(), goodPosVec.end(), it->first) != goodPosVec.end()){
                     accum += it->second;
                     ++cnt;

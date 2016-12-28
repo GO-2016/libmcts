@@ -277,7 +277,7 @@ namespace mct{
             }); // vp: possibility large -> small
 
             auto goodPosVec = b.getAllGoodPosition(player);
-            const double ACC_THRES = b.getStep() > 100 ? (b.getStep() > 200 ? 0.9 : 0.8): 0.7;
+            const double ACC_THRES = b.getStep() > 100 ? (b.getStep() > 200 ? 0.95 : 0.87): 0.8;
             const double AVG_ACC = double(1)/361;
             double accum = 0.0;
             auto it = vp.begin();

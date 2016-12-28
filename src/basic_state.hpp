@@ -74,7 +74,7 @@ namespace mct{
             b.place(a.point,a.player);
             is_terminal = (b.getAllGoodPosition(Player::B).size()==0 || b.getAllGoodPosition(Player::W).size()==0);
         }
-
+        /*
         RequestV2Service reqv2Service;
         auto getCNNGoodPositions(board::Board<W, H> &b, Player player) -> std::vector<pointType> {
             auto requestV2 = b.generateRequestV2(player);
@@ -108,7 +108,7 @@ namespace mct{
                     ans.push_back(p.first);
             }); // ans: small to large
             return ans;
-        }
+        }*/
 
         void fastRollOut(Player player){
             auto start = std::chrono::steady_clock::now();
@@ -120,10 +120,7 @@ namespace mct{
             std::vector<pointType> act_list = b.getAllGoodPosition(player);
             std::vector<pointType> op_act_list = b.getAllGoodPosition(opplayer);
             while(act_list.size()>0 && op_act_list.size()>0 && cnt < 100) {
-                if (cnt++ % 40 == 0){
-                    act_list = getCNNGoodPositions(b,player);
-                    op_act_list = getCNNGoodPositions(b,opplayer);
-                } else if (cnt++ % 5==0){
+                if (cnt++ % 5==0){
                     act_list = b.getAllGoodPosition(player);
                     op_act_list = b.getAllGoodPosition(opplayer);
                     //cnt = 0;

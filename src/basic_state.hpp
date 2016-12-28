@@ -29,6 +29,7 @@ namespace mct{
         using Player = board::Player;
         boardType b;
         bool is_terminal;
+        bool full;
 
         inline double sigmoid(double x)
         {
@@ -40,10 +41,12 @@ namespace mct{
         State(const State<W,H> &other){
             b = other.b;
             is_terminal = other.is_terminal;
+            full = other.full;
         }
         State(const boardType &other){
             b = other;
             is_terminal = (b.getAllGoodPosition(Player::B).size()==0 || b.getAllGoodPosition(Player::W).size()==0);
+            full = (b.getStep()>150);
         }
         State(){
             //b = boardType();
@@ -176,7 +179,7 @@ namespace mct{
             int Blib=0;
             double winnum;
             double score;
-            if(b.getStep()>300) {
+            if(full) {
                 for (std::size_t j = 1; j < H; j++)
                     for (std::size_t i = 0; i < W; i++) {
                         pointType p(i, j);
@@ -202,18 +205,16 @@ namespace mct{
                             auto group = b.getPointGroup(p);
                             switch (group->getPlayer()) {
                                 case Player::B:
-                                    Bnum += (group->getLiberty()>2);
-                                    Bnum += (group->getLiberty()>6);
+                                    Bnum += group->getLiberty();
                                     break;
                                 case Player::W:
-                                    Wnum += (group->getLiberty()>2);
-                                    Wnum += (group->getLiberty()>6);
+                                    Wnum += group->getLiberty();
                                     break;
                             }
                         }
                     }
                 winnum = Bnum - Wnum;
-                score = log(abs(winnum) + 1) + sigmoid(abs(winnum));
+                score = sigmoid(abs(winnum));
             }
 
             if(winnum > 0) return rewardType(score,Player::B);

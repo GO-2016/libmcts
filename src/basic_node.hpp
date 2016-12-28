@@ -142,16 +142,16 @@ namespace mct{
                     q *= 0.9;
                     break;
                 case nodeStatus::NORMAL:
-                    q *= 0.99;
+                    q *= 1;
                     break;
                 case nodeStatus::EDGE:
-                    q *= 1.0;
+                    q *= 1.05;
                     break;
                 case nodeStatus::CORNER:
-                    q *= 1.01;
+                    q *= 1.1;
                     break;
                 case nodeStatus::PREFER:
-                    q *= 1.05;
+                    q *= 1.15;
                     break;
             }
             quality += (int)(q*4096);
@@ -277,7 +277,7 @@ namespace mct{
             }); // vp: possibility large -> small
 
             auto goodPosVec = b.getAllGoodPosition(player);
-            const double ACC_THRES = b.getStep() > 100 ? (b.getStep() > 200 ? 0.95 : 0.87): 0.8;
+            const double ACC_THRES = b.getStep() > 100 ? (b.getStep() > 200 ? 0.9 : 0.8): 0.7;
             double accum = 0.0;
             auto it = vp.begin();
             int cnt = 0;

@@ -121,7 +121,7 @@ namespace mct{
     void MCT<W,H>::single_thread(nodeType * v, int time_limit){
         int check_time = 2;
         auto start = std::chrono::steady_clock::now();
-        std::chrono::milliseconds limit(1000*time_limit-100);
+        std::chrono::milliseconds limit(1000*time_limit-200);
         int cnt = 0,check = 0;
         //double timedif;
         //std::cout << "begin tid:" << std::this_thread::get_id() << std::endl;
@@ -221,13 +221,16 @@ namespace mct{
         stateType st(b);
         st.doAction(a);
         if(st.getBoard().getPointGroup(a.point)->getLiberty()==1) return nodeType::nodeStatus::BAD;
+        if(st.getBoard().getPointGroup(a.point)->getLiberty()>10) return nodeType::nodeStatus::PREFER;
 
         //make eye
+        if(b.getStep()>200) {
+            if (x < W && st.getBoard().isEye(pointType(x + 1, y), a.player)) return nodeType::nodeStatus::PREFER;
+            if (x > 0 && st.getBoard().isEye(pointType(x - 1, y), a.player)) return nodeType::nodeStatus::PREFER;
+            if (y < H && st.getBoard().isEye(pointType(x, y + 1), a.player)) return nodeType::nodeStatus::PREFER;
+            if (y > 0 && st.getBoard().isEye(pointType(x, y - 1), a.player)) return nodeType::nodeStatus::PREFER;
+        }
         /*
-        if(x<W && st.getBoard().isEye(pointType(x+1,y),a.player)) return nodeType::nodeStatus::PREFER;
-        if(x>0 && st.getBoard().isEye(pointType(x-1,y),a.player)) return nodeType::nodeStatus::PREFER;
-        if(y<H && st.getBoard().isEye(pointType(x,y+1),a.player)) return nodeType::nodeStatus::PREFER;
-        if(y>0 && st.getBoard().isEye(pointType(x,y-1),a.player)) return nodeType::nodeStatus::PREFER;
 
         stt.doAction(a.changePlayer());
         if(x<W && stt.getBoard().isEye(pointType(x+1,y),opplayer)) return nodeType::nodeStatus::PREFER;
@@ -236,7 +239,7 @@ namespace mct{
         if(y>0 && stt.getBoard().isEye(pointType(x,y-1),opplayer)) return nodeType::nodeStatus::PREFER;
         */
 
-        if(b.getStep()<80){
+        if(b.getStep()<100){
             size_t mW = W / 2;
             size_t mH = H / 2;
             size_t cW = W / 4;
@@ -288,7 +291,7 @@ namespace mct{
                 std::uniform_int_distribution<> rd(0, v->child.size() - 1);
                 int index = rd(gen);
                 res = v->child[index];
-            }while((res->status == nodeType::nodeStatus::BAD)&& cnt++ < 5);
+            }while((res->status != nodeType::nodeStatus::PREFER) && (res->status == nodeType::nodeStatus::BAD)&& cnt++ < 5);
         }
         //std::cout << std::hex << std::this_thread::get_id()<< "::found child  " << res->isTerminal()<< std::endl;
         if(c == 0){

@@ -190,6 +190,7 @@ namespace mct{
             max_child_number = valid_act.size();
             full_expended = (valid_act.size()==0);
             is_terminal = is_terminal | (max_child_number==0);
+            get_cnn = true;
         }
 
         inline bool isTerminal(){

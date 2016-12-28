@@ -144,6 +144,7 @@ namespace mct{
 	template<std::size_t W,std::size_t H>
 	Action<W,H> MCT<W,H>::MCTSearch(int time_limit){
         if(root_state.isTerminal()) return actionType(true);
+        if(root_state.getBoard().getStep()==0) return actionType(pointType(3,3),root->getCurrentPlayer());
         std::vector<std::thread> threads;
         //std::chrono::milliseconds limit(1000*(time_limit-1));
         for(int i=0;i<thread_num;i++){

@@ -218,7 +218,10 @@ namespace mct{
         size_t y = a.point.y;
         Player opplayer = board::getOpponentPlayer(a.player);
         int step = b.getStep();
-
+        stateType st(b);
+        st.doAction(a);
+        if(st.getBoard().getPointGroup(a.point)->getLiberty()==1) return nodeType::nodeStatus::BAD;
+        if(step<300 && st.getBoard().getPointGroup(a.point)->getLiberty()>10) return nodeType::nodeStatus::BAD;
         /*
 
         stt.doAction(a.changePlayer());
@@ -248,9 +251,6 @@ namespace mct{
                     return nodeType::nodeStatus::EDGE;
         }
 
-        stateType st(b);
-        st.doAction(a);
-        if(st.getBoard().getPointGroup(a.point)->getLiberty()==1) return nodeType::nodeStatus::BAD;
 
         //make eye
         if(step>200) {
@@ -260,7 +260,7 @@ namespace mct{
             if (y > 0 && st.getBoard().isTrueEye(pointType(x, y - 1), a.player)) return nodeType::nodeStatus::PREFER;
         }
 
-        if(step<300 && st.getBoard().getPointGroup(a.point)->getLiberty()>10) return nodeType::nodeStatus::BAD;
+
 
 
         return nodeType::nodeStatus::NORMAL;

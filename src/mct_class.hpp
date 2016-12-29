@@ -227,7 +227,7 @@ namespace mct{
         stateType st(b);
         st.doAction(a);
         if(st.getBoard().getPointGroup(a.point)->getLiberty()==1) return nodeType::nodeStatus::BAD;
-        if(step<300 && st.getBoard().getPointGroup(a.point)->getLiberty()>10) return nodeType::nodeStatus::BAD;
+        //if(step<300 && st.getBoard().getPointGroup(a.point)->getLiberty()>10) return nodeType::nodeStatus::BAD;
         /*
 
         stt.doAction(a.changePlayer());

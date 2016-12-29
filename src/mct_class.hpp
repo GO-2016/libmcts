@@ -237,6 +237,7 @@ namespace mct{
         if(y>0 && stt.getBoard().isEye(pointType(x,y-1),opplayer)) return nodeType::nodeStatus::PREFER;
         */
         //if(b.isSemiEye(a.point,opplayer)) return nodeType::nodeStatus::BAD;
+        /*
         size_t cW = 3;
         size_t cH = 3;
         size_t d;
@@ -256,7 +257,7 @@ namespace mct{
                 if ((y >= cH - d && y <= cH + d) || (y >= H - cH - 1 - d && y <= H - cH - 1 + d))
                     return nodeType::nodeStatus::EDGE;
         }
-
+        */
         /*
         //make eye
         if(step>200) {

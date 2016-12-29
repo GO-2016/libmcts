@@ -206,9 +206,11 @@ namespace mct{
                             switch (group->getPlayer()) {
                                 case Player::B:
                                     Bnum += (group->getLiberty()>2);
+                                    Wnum += (group->getLiberty()<=2);
                                     break;
                                 case Player::W:
                                     Wnum += (group->getLiberty()>2);
+                                    Bnum += (group->getLiberty()<=2);
                                     break;
                             }
                         }

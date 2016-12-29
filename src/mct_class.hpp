@@ -231,7 +231,7 @@ namespace mct{
         if(y<H && stt.getBoard().isEye(pointType(x,y+1),opplayer)) return nodeType::nodeStatus::PREFER;
         if(y>0 && stt.getBoard().isEye(pointType(x,y-1),opplayer)) return nodeType::nodeStatus::PREFER;
         */
-        if(b.isSemiEye(a.point,opplayer)) return nodeType::nodeStatus::BAD;
+        //if(b.isSemiEye(a.point,opplayer)) return nodeType::nodeStatus::BAD;
         size_t cW = 3;
         size_t cH = 3;
         size_t d;

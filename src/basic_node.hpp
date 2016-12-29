@@ -31,6 +31,7 @@ namespace mct{
 	class node{
 	private:
         using pointType = board::GridPoint<W,H>;
+        using PairT = std::pair<pointType, double>;
 		std::atomic_int number;
         int max_child_number;
 		std::atomic_int quality;
@@ -41,8 +42,9 @@ namespace mct{
         bool is_terminal;
 		node<W,H>* parent;
         board::Player player;
-        std::vector<pointType> valid_act;
+        std::vector<PairT> valid_act;
         std::mt19937 gen { std::random_device()() };
+        double pre;
 
 
 	public:
@@ -54,6 +56,7 @@ namespace mct{
         using boardType = board::Board<W,H>;
         using actionType = Action<W,H>;
         using Player = board::Player;
+
         std::vector<nodeType*> child;
         enum struct nodeStatus{
             BAD,
@@ -65,7 +68,7 @@ namespace mct{
         };
         nodeStatus status;
 
-		node(const board::Board<W,H> &b,Player p):number(0),quality(0){
+		node(const board::Board<W,H> &b,Player p):number(0),quality(0),pre(0){
 			parent = NULL;
 			act = actionType();
             //stateType s(b);
@@ -80,7 +83,7 @@ namespace mct{
             is_terminal = false;
             get_cnn = false;
 		}
-        node(stateType &s,Player p,nodeType* par,actionType action,bool t,nodeStatus st):number(0),quality(0){
+        node(stateType &s,Player p,nodeType* par,actionType action,bool t,nodeStatus st,double pre):number(0),quality(0),pre(pre){
             parent = par;
             //state = s;
             act = action;
@@ -135,6 +138,10 @@ namespace mct{
 			return quality;
 		}
 
+        inline double getPre(){
+            return pre;
+        }
+
         inline void increaseQuality(double q){
             //std::cout << res << std::endl;
             switch(status){
@@ -175,10 +182,10 @@ namespace mct{
             return (child.size()==max_child_number);
         }
 
-        actionType getOneUntriedAction(){
-            pointType res = valid_act.back();
+        PairT getOneUntriedAction(){
+            PairT res = valid_act.back();
             valid_act.pop_back();
-            return actionType(res,player);
+            return res;
         }
 
         bool isGetCnn(){
@@ -264,11 +271,10 @@ namespace mct{
         */
 
         RequestV2Service reqv2Service;
-        auto getCNNGoodPositions(board::Board<W, H> &b, Player player) -> std::vector<pointType> {
+        auto getCNNGoodPositions(board::Board<W, H> &b, Player player) -> std::vector<PairT> {
             auto requestV2 = b.generateRequestV2(player);
             auto resp = reqv2Service.sync_call(requestV2);
             auto &possibility = *resp.mutable_possibility();
-            using PairT = std::pair<pointType, double>;
             std::vector<PairT> vp;
             vp.reserve(W * H);
             for(std::size_t i=0;i<possibility.size();++i) vp.emplace_back(pointType(i/H, i%H), possibility.data()[i]);
@@ -290,11 +296,11 @@ namespace mct{
             }
             vp.erase(it, vp.end());
 
-            std::vector<pointType> ans; ans.reserve(W * H);
+            std::vector<PairT> ans; ans.reserve(W * H);
             std::for_each(vp.rbegin(), vp.rend(), [&](const PairT &p){
                 if (b.getPosStatus(p.first, player) == board::Board<W, H>::PositionStatus::OK &&
                         std::find(goodPosVec.begin(), goodPosVec.end(), p.first) != goodPosVec.end())
-                    ans.push_back(p.first);
+                    ans.push_back(p);
             }); // ans: small to large
             return ans;
         }

@@ -61,6 +61,10 @@ namespace mct{
                 return (double)v->getQuality()/4096;
             }
 
+            inline double Pre(nodeType* v){
+                return v->getPre();
+            }
+
             State<W,H> S(nodeType* v){
                 std::vector<actionType> acts;
                 while(v->getParent() != NULL){
@@ -164,7 +168,7 @@ namespace mct{
 	template<std::size_t W,std::size_t H>
 	node<W,H>* MCT<W,H>::TreePolicy(nodeType * v){
 		nodeType * n=v,*tmp;
-       // std::chrono::nanoseconds interval(10);
+        using PairT = std::pair<pointType, double>;
         double cp = 0.707;
         stateType level_state(root_state);
 		while(!n->isTerminal()){
@@ -177,10 +181,11 @@ namespace mct{
                 //n->action_mtx.lock_write();
                 if (!n->isFullExpended()){
                     //std::cout << std::hex << std::this_thread::get_id() << "::double check success\t" << (n==root) << std::endl;
-                    actionType new_a = n->getOneUntriedAction();
+                    PairT new_pair = n->getOneUntriedAction();
+                    actionType new_a(new_pair.first,n->getCurrentPlayer());
                     auto status = judgePoint(level_state.getBoard(),new_a);
                     level_state.doAction(new_a);
-                    nodeType * res = new nodeType(level_state,n->getNextPlayer(),n,new_a,level_state.isTerminal(),status);
+                    nodeType * res = new nodeType(level_state,n->getNextPlayer(),n,new_a,level_state.isTerminal(),status,new_pair.second);
                     n->addChild(res);
                     return res;
                     //return Expend(n,level_state);
@@ -282,7 +287,7 @@ namespace mct{
             //std::cout << std::hex << std::this_thread::get_id()<< std::dec << Q(p) << '|' << N(p) << '|' << N(v)<< std::endl;
             assert(N(p)>0);
             //std::cout << log(N(v)) << std::endl;
-			mid = Q(p)/N(p)+c*sqrt(2*log(N(v))/N(p));
+			mid = (Q(p)+Pre(p))/(N(p)+1)+c*sqrt(2*log(N(v))/N(p));
             //std::cout << std::hex << std::this_thread::get_id() << std::dec << mid << std::endl;
 			if(mid > biggest){
 				biggest = mid;

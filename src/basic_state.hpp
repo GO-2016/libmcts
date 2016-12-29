@@ -122,7 +122,7 @@ namespace mct{
             Player opplayer = board::getOpponentPlayer(player);
             std::vector<pointType> act_list = b.getAllGoodPosition(player);
             std::vector<pointType> op_act_list = b.getAllGoodPosition(opplayer);
-            while(act_list.size()>0 && op_act_list.size()>0 && cnt < 125) {
+            while(act_list.size()>0 && op_act_list.size()>0 && cnt < 200) {
                 if (cnt++ % 5==0){
                     act_list = b.getAllGoodPosition(player);
                     op_act_list = b.getAllGoodPosition(opplayer);
@@ -196,7 +196,7 @@ namespace mct{
                         }
                     }
                 winnum = Bnum - Wnum - 6.5;
-                score = log(abs(winnum) + 1) + sigmoid(abs(winnum));
+                score = log(abs(winnum) + 1)/log(60) + sigmoid(abs(winnum));
             }else{
                 for (std::size_t j = 1; j < H; j++)
                     for (std::size_t i = 0; i < W; i++) {

@@ -85,6 +85,7 @@ int main(){
 
     board::Player p = board::Player::W;
     board::Board<19,19> norm_board;
+    norm_board.place(board::GridPoint<19,19>(5,7),board::Player::B);
     mct::MCT<19,19> tree(norm_board,p,8);
     mct::Action<19,19> a = tree.MCTSearch(10);
     tree.clear();

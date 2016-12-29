@@ -30,6 +30,7 @@ namespace mct{
         boardType b;
         bool is_terminal;
         bool full;
+        int step;
 
         inline double sigmoid(double x)
         {
@@ -42,11 +43,13 @@ namespace mct{
             b = other.b;
             is_terminal = other.is_terminal;
             full = other.full;
+            step = b.getStep();
         }
         State(const boardType &other){
             b = other;
             is_terminal = (b.getAllGoodPosition(Player::B).size()==0 || b.getAllGoodPosition(Player::W).size()==0);
-            full = (b.getStep()>150);
+            step = b.getStep();
+            full = (step>150);
         }
         State(){
             //b = boardType();
@@ -113,59 +116,117 @@ namespace mct{
             return ans;
         }*/
 
-        void fastRollOut(Player player){
-            auto start = std::chrono::steady_clock::now();
+        rewardType fastRollOut(Player player){
+            //auto start = std::chrono::steady_clock::now();
             srand(time(0));
             pointType p;
             int size,op_size,index,cnt=0;
             bool flag = false;
             Player opplayer = board::getOpponentPlayer(player);
-            std::vector<pointType> act_list = b.getAllGoodPosition(player);
-            std::vector<pointType> op_act_list = b.getAllGoodPosition(opplayer);
-            while(act_list.size()>0 && op_act_list.size()>0 && cnt < 200) {
-                if (cnt++ % 5==0){
-                    act_list = b.getAllGoodPosition(player);
-                    op_act_list = b.getAllGoodPosition(opplayer);
-                    //cnt = 0;
-                }
-                size = act_list.size();
-                op_size = op_act_list.size();
-                if (size > 0) {
-                    index = rand() % (size--);
-                    p = act_list[index];
-                    act_list.erase(act_list.begin() + index);
-                    flag = true;
-                    while (b.getPosStatus(p,player) != board::Board<W,H>::PositionStatus::OK || b.isEye(p,player)) {
-                        if (act_list.size() == 0) {
-                            flag = false;
-                            break;
-                        }
+            std::vector<pointType> act_list,op_act_list;
+            const std::size_t TIME= 2*(step/100)+3;
+            double reward=0;
+            for(std::size_t i=0;i<TIME;i++) {
+                boardType test_b(b);
+                act_list = test_b.getAllGoodPosition(player);
+                op_act_list = test_b.getAllGoodPosition(opplayer);
+                while (act_list.size() > 0 && op_act_list.size() > 0 && cnt < 200) {
+                    if (cnt++ % 5 == 0) {
+                        act_list = test_b.getAllGoodPosition(player);
+                        op_act_list = test_b.getAllGoodPosition(opplayer);
+                        //cnt = 0;
+                    }
+                    size = act_list.size();
+                    op_size = op_act_list.size();
+                    if (size > 0) {
                         index = rand() % (size--);
                         p = act_list[index];
                         act_list.erase(act_list.begin() + index);
-                    }
-                    if (flag) b.place(p,player);
-                    else break;
-                }
-                if (op_size > 0) {
-                    index = rand() % (op_size--);
-                    p = op_act_list[index];
-                    op_act_list.erase(op_act_list.begin() + index);
-                    flag = true;
-                    while (b.getPosStatus(p,opplayer) != board::Board<W,H>::PositionStatus::OK || b.isEye(p,opplayer)) {
-                        if (op_act_list.size() == 0) {
-                            flag = false;
-                            break;
+                        flag = true;
+                        while (test_b.getPosStatus(p, player) != board::Board<W, H>::PositionStatus::OK ||
+                                test_b.isEye(p, player)) {
+                            if (act_list.size() == 0) {
+                                flag = false;
+                                break;
+                            }
+                            index = rand() % (size--);
+                            p = act_list[index];
+                            act_list.erase(act_list.begin() + index);
                         }
+                        if (flag) test_b.place(p, player);
+                        else break;
+                    }
+                    if (op_size > 0) {
                         index = rand() % (op_size--);
                         p = op_act_list[index];
                         op_act_list.erase(op_act_list.begin() + index);
+                        flag = true;
+                        while (test_b.getPosStatus(p, opplayer) != board::Board<W, H>::PositionStatus::OK ||
+                                test_b.isEye(p, opplayer)) {
+                            if (op_act_list.size() == 0) {
+                                flag = false;
+                                break;
+                            }
+                            index = rand() % (op_size--);
+                            p = op_act_list[index];
+                            op_act_list.erase(op_act_list.begin() + index);
+                        }
+                        if (flag) test_b.place(p, opplayer);
+                        else break;
                     }
-                    if (flag) b.place(p,opplayer);
-                    else break;
                 }
+                int Wnum=0;
+                int Bnum=0;
+                int Wlib=0;
+                int Blib=0;
+                double winnum;
+                double score;
+                if(full) {
+                    for (std::size_t j = 1; j < H; j++)
+                        for (std::size_t i = 0; i < W; i++) {
+                            pointType p(i, j);
+                            if (b.getPointState(p) != board::PointState::NA) {
+                                auto group = b.getPointGroup(p);
+                                switch (group->getPlayer()) {
+                                    case Player::B:
+                                        Bnum++;
+                                        break;
+                                    case Player::W:
+                                        Wnum++;
+                                        break;
+                                }
+                            }
+                        }
+                    winnum = Bnum - Wnum - 6.5;
+                    score = log(abs(winnum) + 1)/log(60) + sigmoid(abs(winnum));
+                }else{
+                    for (std::size_t j = 1; j < H; j++)
+                        for (std::size_t i = 0; i < W; i++) {
+                            pointType p(i, j);
+                            if (b.getPointState(p) != board::PointState::NA) {
+                                auto group = b.getPointGroup(p);
+                                switch (group->getPlayer()) {
+                                    case Player::B:
+                                        Bnum += (group->getLiberty()>2);
+                                        Wnum += (group->getLiberty()<=2);
+                                        break;
+                                    case Player::W:
+                                        Wnum += (group->getLiberty()>2);
+                                        Bnum += (group->getLiberty()<=2);
+                                        break;
+                                }
+                            }
+                        }
+                    winnum = Bnum - Wnum;
+                    score = sigmoid(abs(winnum));
+                }
+                if(winnum>0) reward+=score;
+                else reward-=score;
             }
-            auto end = std::chrono::steady_clock::now();
+            reward /= TIME;
+            if(reward>0) return rewardType(reward,Player::B);
+            else return rewardType(-1*reward,Player::W);
+            //auto end = std::chrono::steady_clock::now();
 
             //std::cout << "fast roll out cost time:" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms"<< std::endl;
         }

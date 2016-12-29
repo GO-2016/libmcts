@@ -257,14 +257,14 @@ namespace mct{
                     return nodeType::nodeStatus::EDGE;
         }
 
-
+        /*
         //make eye
         if(step>200) {
             if (x < W && st.getBoard().isTrueEye(pointType(x + 1, y), a.player)) return nodeType::nodeStatus::PREFER;
             if (x > 0 && st.getBoard().isTrueEye(pointType(x - 1, y), a.player)) return nodeType::nodeStatus::PREFER;
             if (y < H && st.getBoard().isTrueEye(pointType(x, y + 1), a.player)) return nodeType::nodeStatus::PREFER;
             if (y > 0 && st.getBoard().isTrueEye(pointType(x, y - 1), a.player)) return nodeType::nodeStatus::PREFER;
-        }
+        }*/
 
 
 
